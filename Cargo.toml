@@ -7,3 +7,8 @@ edition = "2021"
 
 [dependencies]
 bevy = {git = "https://github.com/bevyengine/bevy.git"}
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."x"]
