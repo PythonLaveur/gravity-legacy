@@ -12,3 +12,4 @@ bevy = {git = "https://github.com/bevyengine/bevy.git"}
 opt-level = 1
 
 [profile.dev.package."x"]
+opt-level = 3
