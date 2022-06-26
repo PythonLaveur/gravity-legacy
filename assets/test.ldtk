@@ -246,13 +246,13 @@
 			}
 		},
 		{
-			"__cWid": 11,
+			"__cWid": 1,
 			"__cHei": 1,
 			"identifier": "Idle_32x32_",
 			"uid": 23,
-			"relPath": "Main Characters/Virtual Guy/Idle (32x32).png",
+			"relPath": "MainCharacters/VirtualGuy/Fall(32x32).png",
 			"embedAtlas": null,
-			"pxWid": 352,
+			"pxWid": 32,
 			"pxHei": 32,
 			"tileGridSize": 32,
 			"spacing": 0,
@@ -262,7 +262,7 @@
 			"enumTags": [],
 			"customData": [],
 			"savedSelections": [],
-			"cachedPixelData": { "opaqueTiles": "00000000000", "averageColors": "689968996899689a689a689a689a689a689a68996899" }
+			"cachedPixelData": { "opaqueTiles": "0", "averageColors": "689a" }
 		}
 	], "enums": [], "externalEnums": [], "levelFields": [] },
 	"levels": [
