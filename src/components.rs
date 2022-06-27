@@ -6,6 +6,10 @@ use std::collections::HashSet;
 use heron::prelude::*;
 
 // region: --- common structs
+
+#[derive(Component)]
+pub struct Camera;
+
 #[derive(Clone, Debug, Default, Bundle, LdtkIntCell)]
 pub struct ColliderBundle {
     pub collider: CollisionShape,

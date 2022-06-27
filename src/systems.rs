@@ -10,6 +10,8 @@ use heron::{RigidBody, CollisionShape, PhysicMaterial};
 
 use heron::*;
 
+const PI: f32 = 3.1415;
+
 pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     //Camera setup
     let mut camera = OrthographicCameraBundle::new_2d();
@@ -18,7 +20,8 @@ pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         translation: Vec3::new(0., 128., 1000.),
         ..default()
     };
-    commands.spawn_bundle(camera);
+    commands.spawn_bundle(camera)
+    .insert(Camera);
 
 
     //Enable to recall the setup but ignoring the code before
@@ -205,5 +208,22 @@ pub fn spawn_wall_collision(
                 }
             }
         });
+    }
+}
+
+pub fn world_rotation_system(
+    input: Res<Input<KeyCode>>,
+    mut query: Query<&mut Transform, With<Camera>>
+) {
+
+    //Rotate the camera
+    if let Ok(mut camera_tf) = query.get_single_mut() {
+        if input.just_pressed(KeyCode::R) {
+            camera_tf.rotate(Quat::from_rotation_z(PI / 2.));
+        }
+        if input.just_pressed(KeyCode::T) {
+            camera_tf.rotate(Quat::from_rotation_z(-PI / 2.));
+        }
+
     }
 }
