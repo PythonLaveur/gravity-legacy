@@ -1,76 +1,86 @@
+use std::f32::consts::PI;
+
 use bevy::prelude::*;
-use bevy_rapier2d::prelude::*;
 
-#[derive(Component)]
-pub struct Chest;
-
-// region: Game constants
-
-pub const PIXELS_PER_METER: f32 = 492.3;
-
-// endregion: Game constants
-
-// region: Assets constants
-
-// endregion: Assets constants
+use heron::*;
 
 fn main() {
     App::new()
-        .insert_resource(WindowDescriptor {
-            title: "test".to_string(),
-            width: 360.0,
-            height: 640.0,
-            ..Default::default()
-        })
-        .insert_resource(Msaa::default())
-        .insert_resource(ClearColor(Color::rgb(0.0, 0.0, 0.0)))
         .add_plugins(DefaultPlugins)
-        .add_startup_system(setup.label("main_setup"))
-        .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(
-            PIXELS_PER_METER,
-        ))
+        .add_plugin(PhysicsPlugin::default()) // Add the plugin
+        .insert_resource(Gravity::from(Vec2::new(0.0, -600.0))) // Define the gravity
+        .add_startup_system(spawn)
+        .add_system(log_collisions)
         .run();
 }
 
-fn setup(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut rapier_config: ResMut<RapierConfiguration>,
-) {
-    // Set gravity to x and spawn camera.
-    //rapier_config.gravity = Vector2::zeros();
-    rapier_config.gravity = Vec2::new(0.0, -220.0);
+fn spawn(mut commands: Commands) {
+    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
+    // The ground
+    let size = Vec2::new(1000.0, 50.0);
     commands
-        .spawn()
-        .insert_bundle(OrthographicCameraBundle::new_2d());
-    commands
+        // Spawn a bundle that contains at least a `GlobalTransform`
         .spawn_bundle(SpriteBundle {
-            texture: asset_server.load("Items/Boxes/Box1/Idle.png"),
+            sprite: Sprite {
+                color: Color::WHITE,
+                custom_size: Some(size),
+                ..Default::default()
+            },
+            transform: Transform::from_translation(Vec3::new(0.0, -300.0, 0.0)),
             ..Default::default()
         })
+        // Make it a rigid body
+        .insert(RigidBody::Static)
+        // Attach a collision shape
+        .insert(CollisionShape::Cuboid {
+            half_extends: size.extend(0.0) / 2.0,
+            border_radius: None,
+        })
+        // Define restitution (so that it bounces)
+        .insert(PhysicMaterial {
+            restitution: 0.5,
+            ..Default::default()
+        });
+
+    // The Ball
+    let size = Vec2::new(30.0, 30.0);
+    commands
+        // Spawn a bundle that contains at least a `GlobalTransform`
+        .spawn_bundle(SpriteBundle {
+            sprite: Sprite {
+                color: Color::GREEN,
+                custom_size: Some(size),
+                ..Default::default()
+            },
+            transform: Transform::from_translation(Vec3::new(-400.0, 200.0, 0.0)),
+            ..Default::default()
+        })
+        // Make it a rigid body
         .insert(RigidBody::Dynamic)
-        .insert(Sleeping::disabled())
-        .insert(Ccd::enabled())
-        .insert(Collider::cuboid(10., 10.))
-        .insert(Transform::from_xyz(0., 0., 0.))
-        .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(Restitution::coefficient(0.7))
-        .insert(Chest);
-
-    for i in 1..10 {
-        commands
-        .spawn_bundle(SpriteBundle {
-            texture: asset_server.load("Items/Boxes/Box1/Idle.png"),
-            ..Default::default()
+        // Attach a collision shape
+        .insert(CollisionShape::Cuboid {
+            half_extends: size.extend(0.0) / 2.0,
+            border_radius: None,
         })
-        .insert(RigidBody::Fixed)
-        .insert(Sleeping::disabled())
-        .insert(Ccd::enabled())
-        .insert(Collider::cuboid(10., 10.))
-        .insert(Transform::from_xyz(-100. + (i as f32) * 20., -100., 0.))
-        .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(Restitution::coefficient(0.7))
-        .insert(Chest);
+        // Add an initial velocity. (it is also possible to read/mutate this component later)
+        .insert(Velocity::from(Vec2::X * 300.0).with_angular(AxisAngle::new(Vec3::Z, -PI)))
+        // Define restitution (so that it bounces)
+        .insert(PhysicMaterial {
+            restitution: 0.7,
+            ..Default::default()
+        });
+}
+
+fn log_collisions(mut events: EventReader<CollisionEvent>) {
+    for event in events.iter() {
+        match event {
+            CollisionEvent::Started(d1, d2) => {
+                println!("Collision started between {:?} and {:?}", d1, d2)
+            }
+            CollisionEvent::Stopped(d1, d2) => {
+                println!("Collision stopped between {:?} and {:?}", d1, d2)
+            }
+        }
     }
 }
