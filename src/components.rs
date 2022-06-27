@@ -1,4 +1,4 @@
-use bevy::{prelude::*, math::vec2};
+use bevy::{prelude::*};
 use bevy_ecs_ldtk::prelude::*;
 
 use std::collections::HashSet;
@@ -18,7 +18,6 @@ pub struct ColliderBundle {
 impl From<EntityInstance> for ColliderBundle {
     fn from(entity_instance: EntityInstance) -> ColliderBundle {
         let rotation_constraints = RotationConstraints::lock();
-        println!("Goes into from entity_instance of : {:?}", entity_instance.identifier);
         match entity_instance.identifier.as_str() {
             "Player" => ColliderBundle {
                 collider: CollisionShape::Cuboid {

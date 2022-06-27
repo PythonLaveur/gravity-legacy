@@ -1,12 +1,11 @@
-use crate::{MAP_LDTK, components::{Player, PlayerBundle}};
+use crate::{MAP_LDTK, components::{Player}};
 use crate::components::*;
 
-use bevy::{prelude::*, input};
+use bevy::{prelude::*};
 use bevy_ecs_ldtk::prelude::*;
 
 use std::collections::{HashMap, HashSet};
 
-use bevy_ecs_ldtk::prelude::*;
 use heron::{RigidBody, CollisionShape, PhysicMaterial};
 
 use heron::*;
@@ -16,7 +15,7 @@ pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let mut camera = OrthographicCameraBundle::new_2d();
     //Offset
     camera.transform = Transform {
-        translation: Vec3::new(-56., 20., 1000.),
+        translation: Vec3::new(0., 128., 1000.),
         ..default()
     };
     commands.spawn_bundle(camera);
@@ -34,20 +33,14 @@ pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         ldtk_handle,
         ..Default::default()
     });
-    println!("System setup was called");
 }
 
 
-pub fn print_player_position(
+pub fn input_player_movement(
     input: Res<Input<KeyCode>>,
     mut query: Query<(&mut Velocity, &mut Player), With<Player>>
 ){
     for (mut velocity, mut player) in query.iter_mut() {
-        if player.previous_input.x != 0. && velocity.linear.x == 0.
-        {
-            player.previous_input.y = 1. - player.previous_input.y;
-        }
-        player.previous_input.x = 0.;
         let right = if input.pressed(KeyCode::D) { 
             player.previous_input.x = 1.;
             1. 
