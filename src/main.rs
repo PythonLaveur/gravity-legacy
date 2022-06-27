@@ -51,5 +51,6 @@ fn main() {
         .register_ldtk_int_cell::<components::WallBundle>(2)
         //Entities
         .register_ldtk_entity::<components::PlayerBundle>("Player")
+        .register_ldtk_entity::<components::PotBundle>("Pot")
         .run();
 }

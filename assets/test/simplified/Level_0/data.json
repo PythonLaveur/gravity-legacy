@@ -13,10 +13,10 @@
 				"id": "Pot",
 				"iid": "5aad9190-dbe0-11ec-bcfe-891495d9473e",
 				"layer": "Entities",
-				"x": 176,
-				"y": 224,
+				"x": 112,
+				"y": 112,
 				"width": 16,
-				"height": 16,
+				"height": 32,
 				"color": 10976256,
 				"customFields" : {}
 			}

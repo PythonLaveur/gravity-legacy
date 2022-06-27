@@ -149,7 +149,7 @@
 			"uid": 15,
 			"tags": [],
 			"width": 16,
-			"height": 16,
+			"height": 32,
 			"resizableX": false,
 			"resizableY": false,
 			"keepAspectRatio": false,
@@ -313,16 +313,16 @@
 					"entityInstances": [
 						{
 							"__identifier": "Pot",
-							"__grid": [11,14],
+							"__grid": [7,7],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": { "tilesetUid": 2, "x": 272, "y": 144, "w": 16, "h": 16 },
 							"__smartColor": "#A77C00",
 							"iid": "5aad9190-dbe0-11ec-bcfe-891495d9473e",
 							"width": 16,
-							"height": 16,
+							"height": 32,
 							"defUid": 15,
-							"px": [176,224],
+							"px": [112,112],
 							"fieldInstances": []
 						},
 						{
