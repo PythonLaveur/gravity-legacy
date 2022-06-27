@@ -1,9 +1,10 @@
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
+use bevy_kira_audio::AudioPlugin;
 //use components::PlayerBundle;
 use heron::prelude::*;
-use systems::{input_player_movement, world_rotation_system};
+use systems::{input_player_movement, world_rotation_system, background_audio};
 //use systems::{process_my_entities};
 
 mod components;
@@ -27,6 +28,7 @@ fn main() {
         })
         .add_plugins(DefaultPlugins)
         .add_plugin(LdtkPlugin)
+        .add_plugin(AudioPlugin)
         .add_plugin(PhysicsPlugin::default())
         .insert_resource(Gravity::from(Vec3::new(0.0, -2000., 0.0)))
         .insert_resource(LevelSelection::Index(0))
@@ -38,6 +40,7 @@ fn main() {
             ..Default::default()
         })
         .add_startup_system(systems::setup)
+        .add_startup_system(background_audio)
         //.add_startup_system(process_my_entities)
         .add_system(world_rotation_system)
         .add_system(systems::spawn_wall_collision)
