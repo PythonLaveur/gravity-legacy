@@ -3,7 +3,7 @@ use bevy_ecs_ldtk::prelude::*;
 
 //use components::PlayerBundle;
 use heron::prelude::*;
-use systems::{input_player_movement};
+use systems::{input_player_movement, world_rotation_system};
 //use systems::{process_my_entities};
 
 mod components;
@@ -39,9 +39,9 @@ fn main() {
         })
         .add_startup_system(systems::setup)
         //.add_startup_system(process_my_entities)
+        .add_system(world_rotation_system)
         .add_system(systems::spawn_wall_collision)
         .add_system(input_player_movement)
-        
         // Map the components to match project structs
         // Tiles
         .register_ldtk_int_cell::<components::WallBundle>(1)
