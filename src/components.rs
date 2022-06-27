@@ -34,11 +34,16 @@ impl From<EntityInstance> for ColliderBundle {
             },
             "Pot" => ColliderBundle {
                 collider: CollisionShape::Cuboid {
-                    half_extends: Vec3::new(5., 5., 0.),
+                    half_extends: Vec3::new(8., 15., 0.),
                     border_radius: None,
                 },
                 rigid_body: RigidBody::Dynamic,
                 rotation_constraints,
+                physic_material: PhysicMaterial {
+                    friction: 0.,
+                    density: 15.0,
+                    ..Default::default()
+                },
                 ..Default::default()
             },
             "Key" => ColliderBundle {
@@ -119,6 +124,27 @@ pub struct Wall;
 #[derive(Clone, Debug, Default, Bundle, LdtkIntCell)]
 pub struct WallBundle {
     wall: Wall,
+}
+
+#[derive(Copy, Clone, PartialEq, Debug, Default, Component)]
+pub struct Pot;
+
+#[derive(Clone, Default, Bundle, LdtkEntity)]
+pub struct PotBundle {
+    #[sprite_bundle("pot.png")]
+    #[bundle]
+    pub sprite_bundle: SpriteBundle,
+    #[from_entity_instance]
+    #[bundle]
+    pub collider_bundle: ColliderBundle,
+    pub pot: Pot,
+    #[worldly]
+    pub worldly: Worldly,
+    pub ground_detection: GroundDetection,
+
+    // The whole EntityInstance can be stored directly as an EntityInstance component
+    #[from_entity_instance]
+    entity_instance: EntityInstance,
 }
 
 #[derive(Clone, Default, Component)]
