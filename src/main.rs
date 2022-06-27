@@ -42,7 +42,6 @@ fn main() {
         .add_system(world_rotation_system)
         .add_system(systems::spawn_wall_collision)
         .add_system(input_player_movement)
-        
         // Map the components to match project structs
         // Tiles
         .register_ldtk_int_cell::<components::WallBundle>(1)

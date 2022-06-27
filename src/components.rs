@@ -1,4 +1,4 @@
-use bevy::{prelude::*};
+use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
 use std::collections::HashSet;
@@ -25,7 +25,7 @@ impl From<EntityInstance> for ColliderBundle {
         match entity_instance.identifier.as_str() {
             "Player" => ColliderBundle {
                 collider: CollisionShape::Cuboid {
-                    half_extends: Vec3::new(6., 14., 0.),
+                    half_extends: Vec3::new(6., 6., 0.),
                     border_radius: None,
                 },
                 rigid_body: RigidBody::Dynamic,
@@ -65,7 +65,7 @@ impl From<IntGridCell> for ColliderBundle {
         println!("Setup grid");
         let rotation_constraints = RotationConstraints::lock();
 
-        if int_grid_cell.value == 2 ||int_grid_cell.value == 1 {
+        if int_grid_cell.value == 2 || int_grid_cell.value == 1 {
             ColliderBundle {
                 collider: CollisionShape::Cuboid {
                     half_extends: Vec3::new(8., 8., 0.),
@@ -84,14 +84,14 @@ impl From<IntGridCell> for ColliderBundle {
 // endregion: --- common structs
 
 #[derive(Copy, Clone, PartialEq, Debug, Component)]
-pub struct Player{
-    pub previous_input : Vec2
+pub struct Player {
+    pub previous_input: Vec2,
 }
 impl Default for Player {
     fn default() -> Self {
-       Player {
-        previous_input : Vec2::new(0., 0.)
-       }
+        Player {
+            previous_input: Vec2::new(0., 0.),
+        }
     }
 }
 
@@ -107,8 +107,7 @@ pub struct PlayerBundle {
     #[worldly]
     pub worldly: Worldly,
     pub ground_detection: GroundDetection,
-    
-    
+
     // The whole EntityInstance can be stored directly as an EntityInstance component
     #[from_entity_instance]
     entity_instance: EntityInstance,
