@@ -29,6 +29,11 @@ pub enum GameState {
     Overworld,
     Combat,
 }
+
+pub struct GetGameState {
+    game_state: GameState,
+}
+
 // endregion: --- Assets constants
 fn main() {
     env::set_var("RUST_BACKTRACE", "1");
