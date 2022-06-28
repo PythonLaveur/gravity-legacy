@@ -3,6 +3,7 @@
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_kira_audio::AudioPlugin;
+use slime::SlimePlugin;
 use std::env;
 //use components::PlayerBundle;
 use ascii::AsciiPlugin;
@@ -14,8 +15,33 @@ use start_menu::MainMenuPlugin;
 mod ascii;
 mod components;
 mod fadeout;
+mod slime;
+mod slime_collision;
 mod start_menu;
 mod systems;
+
+//Player sprites
+const PLAYER_JUMP: &str = "jump.png";
+const PLAYER_JUMP_SIZE: (f32, f32) = (24., 27.);
+const PLAYER_JUMP_COLUMN: usize = 8;
+
+const PLAYER_IDLE: &str = "idle.png";
+const PLAYER_IDLE_SIZE: (f32, f32) = (22., 23.);
+const PLAYER_IDLE_COLUMN: usize = 8;
+
+const PLAYER_WALK: &str = "walk.png";
+const PLAYER_WALK_SIZE: (f32, f32) = (23., 24.);
+const PLAYER_WALK_COLUMN: usize = 10;
+
+const PLAYER_SCALE: f32 = 1.;
+const SECURITY_DISTANCE: f32 = 10.;
+const BASE_SPEED: f32 = 100.;
+
+pub struct GameTextures {
+    player_idle: Handle<TextureAtlas>,
+    player_jump: Handle<TextureAtlas>,
+    player_walk: Handle<TextureAtlas>,
+}
 
 // region:    --- Assets constants
 pub const TILE_SIZE: f32 = 0.1;
@@ -53,6 +79,7 @@ fn main() {
         .add_plugin(FadeoutPlugin)
         .add_plugin(AsciiPlugin)
         .add_plugin(MainMenuPlugin)
+        .add_plugin(SlimePlugin)
         .insert_resource(Gravity::from(Vec3::new(0.0, -2000., 0.0)))
         .insert_resource(LevelSelection::Index(0))
         .insert_resource(LdtkSettings {
@@ -66,13 +93,12 @@ fn main() {
         .add_system(world_rotation_system)
         .add_startup_system(background_audio)
         .add_system(systems::spawn_wall_collision)
-        .add_system(input_player_movement)
+        .add_system(systems::animate_sprite_system)
         // Map the components to match project structs
         // Tiles
         .register_ldtk_int_cell::<components::WallBundle>(1)
         .register_ldtk_int_cell::<components::WallBundle>(2)
         //Entities
-        .register_ldtk_entity::<components::PlayerBundle>("Player")
         .register_ldtk_entity::<components::PotBundle>("Pot")
         .run();
 }

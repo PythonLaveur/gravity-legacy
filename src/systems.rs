@@ -1,5 +1,9 @@
-use crate::{components::*, GetGameState, GameState};
 use crate::{components::Player, MAP_LDTK};
+use crate::{
+    components::*, GameState, GameTextures, GetGameState, PLAYER_IDLE, PLAYER_IDLE_COLUMN,
+    PLAYER_IDLE_SIZE, PLAYER_JUMP, PLAYER_JUMP_COLUMN, PLAYER_JUMP_SIZE, PLAYER_WALK,
+    PLAYER_WALK_COLUMN, PLAYER_WALK_SIZE,
+};
 
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
@@ -13,7 +17,11 @@ use heron::*;
 
 const PI: f32 = 3.1415;
 
-pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn setup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+) {
     //Camera setup
     let mut camera = OrthographicCameraBundle::new_2d();
     //Offset
@@ -34,6 +42,41 @@ pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     //Load the levels
     let ldtk_handle = asset_server.load(MAP_LDTK);
 
+    //load textures atlases :
+    let texture_handle = asset_server.load(PLAYER_JUMP);
+    let texture_atlas = TextureAtlas::from_grid(
+        texture_handle,
+        Vec2::from(PLAYER_JUMP_SIZE),
+        PLAYER_JUMP_COLUMN,
+        1,
+    );
+    let player_jump = texture_atlases.add(texture_atlas);
+
+    let texture_handle = asset_server.load(PLAYER_IDLE);
+    let texture_atlas = TextureAtlas::from_grid(
+        texture_handle,
+        Vec2::from(PLAYER_IDLE_SIZE),
+        PLAYER_IDLE_COLUMN,
+        1,
+    );
+    let player_idle = texture_atlases.add(texture_atlas);
+
+    let texture_handle = asset_server.load(PLAYER_WALK);
+    let texture_atlas = TextureAtlas::from_grid(
+        texture_handle,
+        Vec2::from(PLAYER_WALK_SIZE),
+        PLAYER_WALK_COLUMN,
+        1,
+    );
+    let player_walk = texture_atlases.add(texture_atlas);
+
+    let game_textures = GameTextures {
+        player_idle,
+        player_jump,
+        player_walk,
+    };
+    commands.insert_resource(game_textures);
+
     //let map_entity = commands.spawn().id();
     //Spawning the levels
     commands.spawn_bundle(LdtkWorldBundle {
@@ -44,36 +87,6 @@ pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 pub fn background_audio(asset_server: Res<AssetServer>, audio: Res<Audio>) {
     audio.play_looped(asset_server.load("Audio/Hyper.ogg"));
-}
-
-pub fn input_player_movement(
-    input: Res<Input<KeyCode>>,
-    gravity: Res<Gravity>,
-    get_game_state: Res<GetGameState>,
-    mut query: Query<(&mut Velocity, &mut Player), With<Player>>,
-) {
-    if get_game_state.game_state == GameState::Overworld {
-        for (mut velocity, mut player) in query.iter_mut() {
-            let right = if input.pressed(KeyCode::D) {
-                player.previous_input.x = 1.;
-                1.
-            } else {
-                0.
-            };
-            let left = if input.pressed(KeyCode::A) {
-                player.previous_input.x = -1.;
-                1.
-            } else {
-                0.
-            };
-    
-            if player.previous_input.y == 0. {
-                velocity.linear.x = (right - left) * 200.;
-            } else {
-                velocity.linear.y = (right - left) * 200.;
-            }
-        }
-    }
 }
 
 pub fn spawn_wall_collision(
@@ -123,8 +136,8 @@ pub fn spawn_wall_collision(
                     .layer_instances
                     .clone()
                     .expect("Level asset should have layers")[0];
-                
-                    println!("The gridsize is {:?}",grid_size);
+
+                println!("The gridsize is {:?}", grid_size);
 
                 // combine wall tiles into flat "plates" in each individual row
                 let mut plate_stack: Vec<Vec<Plate>> = Vec::new();
@@ -232,39 +245,62 @@ pub fn world_rotation_system(
     get_game_state: Res<GetGameState>,
     mut query: Query<&mut Transform, With<MainCamera>>,
 ) {
-    if get_game_state.game_state == GameState::Overworld { 
+    if get_game_state.game_state == GameState::Overworld {
         //Rotate the camera
-    if let Ok(mut camera_tf) = query.get_single_mut() {
-        if input.just_pressed(KeyCode::R) {
-            //Rotate the camera
-            camera_tf.rotate(Quat::from_rotation_z(PI / 2.));
-            //Change gravity
-            let gravity = gravity.as_mut();
-            if gravity.vector().y < 0. {
-                *gravity = Gravity::from(Vec3::new(2000., 0., 0.0));
-            } else if gravity.vector().x > 0. {
-                *gravity = Gravity::from(Vec3::new(0., 2000., 0.0));
-            } else if gravity.vector().y > 0. {
-                *gravity = Gravity::from(Vec3::new(-2000., 0., 0.0));
-            } else if gravity.vector().x < 0. {
-                *gravity = Gravity::from(Vec3::new(0., -2000., 0.0));
+        if let Ok(mut camera_tf) = query.get_single_mut() {
+            if input.just_pressed(KeyCode::R) {
+                //Rotate the camera
+                camera_tf.rotate(Quat::from_rotation_z(PI / 2.));
+                //Change gravity
+                let gravity = gravity.as_mut();
+                if gravity.vector().y < 0. {
+                    *gravity = Gravity::from(Vec3::new(2000., 0., 0.0));
+                } else if gravity.vector().x > 0. {
+                    *gravity = Gravity::from(Vec3::new(0., 2000., 0.0));
+                } else if gravity.vector().y > 0. {
+                    *gravity = Gravity::from(Vec3::new(-2000., 0., 0.0));
+                } else if gravity.vector().x < 0. {
+                    *gravity = Gravity::from(Vec3::new(0., -2000., 0.0));
+                }
             }
-        }
-        if input.just_pressed(KeyCode::T) {
-            //Rotate the camera
-            camera_tf.rotate(Quat::from_rotation_z(-PI / 2.));
-            //Change gravity
-            let gravity = gravity.as_mut();
-            if gravity.vector().y < 0. {
-                *gravity = Gravity::from(Vec3::new(-2000., 0., 0.0));
-            } else if gravity.vector().x < 0. {
-                *gravity = Gravity::from(Vec3::new(0., 2000., 0.0));
-            } else if gravity.vector().y > 0. {
-                *gravity = Gravity::from(Vec3::new(2000., 0., 0.0));
-            } else if gravity.vector().x > 0. {
-                *gravity = Gravity::from(Vec3::new(0., -2000., 0.0));
+            if input.just_pressed(KeyCode::T) {
+                //Rotate the camera
+                camera_tf.rotate(Quat::from_rotation_z(-PI / 2.));
+                //Change gravity
+                let gravity = gravity.as_mut();
+                if gravity.vector().y < 0. {
+                    *gravity = Gravity::from(Vec3::new(-2000., 0., 0.0));
+                } else if gravity.vector().x < 0. {
+                    *gravity = Gravity::from(Vec3::new(0., 2000., 0.0));
+                } else if gravity.vector().y > 0. {
+                    *gravity = Gravity::from(Vec3::new(2000., 0., 0.0));
+                } else if gravity.vector().x > 0. {
+                    *gravity = Gravity::from(Vec3::new(0., -2000., 0.0));
+                }
             }
         }
     }
+}
+
+pub fn animate_sprite_system(
+    //mut commands: Commands,
+    time: Res<Time>,
+    //game_textures: Res<GameTextures>,
+    texture_atlases: Res<Assets<TextureAtlas>>,
+    mut query: Query<
+        (
+            &mut AnimationTimer,
+            &mut TextureAtlasSprite,
+            &Handle<TextureAtlas>,
+        ),
+        With<AnimationTimer>,
+    >,
+) {
+    for (mut timer, mut sprite, texture_atlas_handle) in query.iter_mut() {
+        timer.tick(time.delta());
+        if timer.just_finished() {
+            let texture_atlas = texture_atlases.get(texture_atlas_handle).unwrap();
+            sprite.index = (sprite.index + 1) % texture_atlas.textures.len();
+        }
     }
 }
