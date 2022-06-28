@@ -22,7 +22,11 @@ impl Plugin for MainMenuPlugin {
     }
 }
 
-fn despawn_menu(mut commands: Commands, button_query: Query<Entity, With<Button>>, mut get_game_state: ResMut<GetGameState>) {
+fn despawn_menu(
+    mut commands: Commands,
+    button_query: Query<Entity, With<Button>>,
+    mut get_game_state: ResMut<GetGameState>,
+) {
     for ent in button_query.iter() {
         commands.entity(ent).despawn_recursive();
     }

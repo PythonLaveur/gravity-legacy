@@ -88,36 +88,6 @@ impl From<IntGridCell> for ColliderBundle {
 
 // endregion: --- common structs
 
-#[derive(Copy, Clone, PartialEq, Debug, Component)]
-pub struct Player {
-    pub previous_input: Vec2,
-}
-impl Default for Player {
-    fn default() -> Self {
-        Player {
-            previous_input: Vec2::new(0., 0.),
-        }
-    }
-}
-
-#[derive(Clone, Default, Bundle, LdtkEntity)]
-pub struct PlayerBundle {
-    #[sprite_bundle("player.png")]
-    #[bundle]
-    pub sprite_bundle: SpriteBundle,
-    #[from_entity_instance]
-    #[bundle]
-    pub collider_bundle: ColliderBundle,
-    pub player: Player,
-    #[worldly]
-    pub worldly: Worldly,
-    pub ground_detection: GroundDetection,
-
-    // The whole EntityInstance can be stored directly as an EntityInstance component
-    #[from_entity_instance]
-    entity_instance: EntityInstance,
-}
-
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
 pub struct Wall;
 
@@ -157,3 +127,26 @@ pub struct GroundSensor {
     pub ground_detection_entity: Entity,
     pub intersecting_ground_entities: HashSet<Entity>,
 }
+
+#[derive(Copy, Clone, PartialEq, Debug, Component)]
+pub struct Player;
+
+#[derive(Component)]
+pub struct SpriteSize {
+    pub val: Vec2,
+}
+
+#[derive(Component, Debug)]
+pub struct Slime {
+    pub side: crate::slime_collision::Side,
+    pub side_before: crate::slime_collision::Side,
+    pub lenght_on_side: f32,
+    pub depth: f32,
+    pub is_jumping: bool,
+    pub is_walking: bool,
+    pub need_new_sprite: bool,
+    pub stop_timer: u8,
+}
+
+#[derive(Component, Deref, DerefMut)]
+pub struct AnimationTimer(pub Timer);
