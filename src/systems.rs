@@ -1,13 +1,13 @@
-use crate::{MAP_LDTK, components::{Player}};
 use crate::components::*;
+use crate::{components::Player, MAP_LDTK};
 
-use bevy::{prelude::*};
+use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
-use bevy_kira_audio::{Audio};
+use bevy_kira_audio::Audio;
 
 use std::collections::{HashMap, HashSet};
 
-use heron::{RigidBody, CollisionShape, PhysicMaterial};
+use heron::{CollisionShape, PhysicMaterial, RigidBody};
 
 use heron::*;
 
@@ -21,9 +21,7 @@ pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         translation: Vec3::new(0., 128., 1000.),
         ..default()
     };
-    commands.spawn_bundle(camera)
-    .insert(Camera);
-
+    commands.spawn_bundle(camera).insert(Camera);
 
     //Enable to recall the setup but ignoring the code before
     asset_server.watch_for_changes().unwrap();
@@ -39,35 +37,34 @@ pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
-pub fn background_audio(
-    asset_server: Res<AssetServer>,
-    audio: Res<Audio>
-){
+pub fn background_audio(asset_server: Res<AssetServer>, audio: Res<Audio>) {
     audio.play_looped(asset_server.load("Audio/Hyper.ogg"));
 }
 
 pub fn input_player_movement(
     input: Res<Input<KeyCode>>,
     gravity: Res<Gravity>,
-    mut query: Query<(&mut Velocity, &mut Player), With<Player>>
-){
+    mut query: Query<(&mut Velocity, &mut Player), With<Player>>,
+) {
     for (mut velocity, mut player) in query.iter_mut() {
-        let right = if input.pressed(KeyCode::D) { 
+        let right = if input.pressed(KeyCode::D) {
             player.previous_input.x = 1.;
-            1. 
-        } else {  0. };
-        let left = if input.pressed(KeyCode::A) { 
+            1.
+        } else {
+            0.
+        };
+        let left = if input.pressed(KeyCode::A) {
             player.previous_input.x = -1.;
-            1. 
-        } else { 0. };
+            1.
+        } else {
+            0.
+        };
 
-        if player.previous_input.y == 0. { 
-            velocity.linear.x = (right - left) * 200.; 
+        if player.previous_input.y == 0. {
+            velocity.linear.x = (right - left) * 200.;
+        } else {
+            velocity.linear.y = (right - left) * 200.;
         }
-        else {
-            velocity.linear.y = (right - left) * 200.; 
-        }
-        
     }
 }
 
@@ -222,9 +219,8 @@ pub fn spawn_wall_collision(
 pub fn world_rotation_system(
     input: Res<Input<KeyCode>>,
     mut gravity: ResMut<Gravity>,
-    mut query: Query<&mut Transform, With<Camera>>
+    mut query: Query<&mut Transform, With<Camera>>,
 ) {
-
     //Rotate the camera
     if let Ok(mut camera_tf) = query.get_single_mut() {
         if input.just_pressed(KeyCode::R) {
@@ -234,14 +230,11 @@ pub fn world_rotation_system(
             let gravity = gravity.as_mut();
             if gravity.vector().y < 0. {
                 *gravity = Gravity::from(Vec3::new(2000., 0., 0.0));
-            } else
-            if gravity.vector().x > 0. {
+            } else if gravity.vector().x > 0. {
                 *gravity = Gravity::from(Vec3::new(0., 2000., 0.0));
-            } else
-            if gravity.vector().y > 0. {
+            } else if gravity.vector().y > 0. {
                 *gravity = Gravity::from(Vec3::new(-2000., 0., 0.0));
-            } else
-            if gravity.vector().x < 0. {
+            } else if gravity.vector().x < 0. {
                 *gravity = Gravity::from(Vec3::new(0., -2000., 0.0));
             }
         }
@@ -252,17 +245,13 @@ pub fn world_rotation_system(
             let gravity = gravity.as_mut();
             if gravity.vector().y < 0. {
                 *gravity = Gravity::from(Vec3::new(-2000., 0., 0.0));
-            } else
-            if gravity.vector().x < 0. {
+            } else if gravity.vector().x < 0. {
                 *gravity = Gravity::from(Vec3::new(0., 2000., 0.0));
-            } else 
-            if gravity.vector().y > 0. {
+            } else if gravity.vector().y > 0. {
                 *gravity = Gravity::from(Vec3::new(2000., 0., 0.0));
-            } else 
-            if gravity.vector().x > 0. {
+            } else if gravity.vector().x > 0. {
                 *gravity = Gravity::from(Vec3::new(0., -2000., 0.0));
             }
         }
-
     }
 }
