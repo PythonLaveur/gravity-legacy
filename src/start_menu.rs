@@ -21,7 +21,6 @@ impl Plugin for MainMenuPlugin {
             .add_system(handle_start_button);
     }
 }
-    
 
 fn despawn_menu(mut commands: Commands, button_query: Query<Entity, With<Button>>) {
     for ent in button_query.iter() {
@@ -38,8 +37,6 @@ fn handle_start_button(
     mut image_query: Query<&mut UiImage>,
     ui_assets: Res<UiAssets>,
     ascii: Res<AsciiSheet>,
-    
-    
 ) {
     for (children, mut active, interaction) in interaction_query.iter_mut() {
         let child = children.iter().next().unwrap();
