@@ -21,7 +21,7 @@ pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         translation: Vec3::new(0., 128., 1000.),
         ..default()
     };
-    commands.spawn_bundle(camera).insert(Camera);
+    commands.spawn_bundle(camera).insert(MainCamera);
 
     //Enable to recall the setup but ignoring the code before
     asset_server.watch_for_changes().unwrap();
@@ -221,7 +221,7 @@ pub fn spawn_wall_collision(
 pub fn world_rotation_system(
     input: Res<Input<KeyCode>>,
     mut gravity: ResMut<Gravity>,
-    mut query: Query<&mut Transform, With<Camera>>,
+    mut query: Query<&mut Transform, With<MainCamera>>,
 ) {
     //Rotate the camera
     if let Ok(mut camera_tf) = query.get_single_mut() {

@@ -8,7 +8,7 @@ use heron::prelude::*;
 // region: --- common structs
 
 #[derive(Component)]
-pub struct Camera;
+pub struct MainCamera;
 
 #[derive(Clone, Debug, Default, Bundle, LdtkIntCell)]
 pub struct ColliderBundle {
