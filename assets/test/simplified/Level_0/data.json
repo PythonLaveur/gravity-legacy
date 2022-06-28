@@ -15,6 +15,7 @@
 				"layer": "Entities",
 				"x": 112,
 				"y": 112,
+<<<<<<< HEAD
 				"width": 16,
 				"height": 32,
 				"color": 10976256,
@@ -59,6 +60,8 @@
 				"layer": "Entities",
 				"x": 176,
 				"y": 80,
+=======
+>>>>>>> cea8903d5d8a3ec97508c97aa4d9f8ebc8088cd4
 				"width": 16,
 				"height": 32,
 				"color": 10976256,
