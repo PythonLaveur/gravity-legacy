@@ -62,7 +62,7 @@ fn main() {
         .add_system_set(SystemSet::on_update(GameState::Overworld).with_system(world_rotation_system))
         .add_system_set(SystemSet::on_update(GameState::Overworld).with_system(background_audio))
         //.add_startup_system(process_my_entities)
-        .add_plugin(MainMenuPlugin)
+        
         .add_system_set(SystemSet::on_update(GameState::Overworld).with_system(spawn_wall_collision))
         .add_system_set(SystemSet::on_update(GameState::Overworld).with_system(input_player_movement))
         // Map the components to match project structs
