@@ -57,14 +57,13 @@ fn main() {
             set_clear_color: SetClearColor::FromLevelBackground,
             ..Default::default()
         })
-        .add_system(systems::setup)
-        
-        .add_system_set(SystemSet::on_update(GameState::Overworld).with_system(world_rotation_system))
+        .add_startup_system(systems::setup)
+        .add_system(world_rotation_system)
+        .add_system(systems::spawn_wall_collision)
+    
         .add_system_set(SystemSet::on_update(GameState::Overworld).with_system(background_audio))
-        //.add_startup_system(process_my_entities)
-        
-        .add_system_set(SystemSet::on_update(GameState::Overworld).with_system(spawn_wall_collision))
         .add_system_set(SystemSet::on_update(GameState::Overworld).with_system(input_player_movement))
+        
         // Map the components to match project structs
         // Tiles
         .register_ldtk_int_cell::<components::WallBundle>(1)
