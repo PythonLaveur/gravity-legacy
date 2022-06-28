@@ -29,6 +29,11 @@ pub enum GameState {
     Overworld,
     Combat,
 }
+
+pub struct GetGameState {
+    game_state: GameState,
+}
+
 // endregion: --- Assets constants
 fn main() {
     env::set_var("RUST_BACKTRACE", "1");
@@ -61,9 +66,7 @@ fn main() {
         .add_system(world_rotation_system)
         .add_startup_system(background_audio)
         .add_system(systems::spawn_wall_collision)
-        .add_system_set(
-            SystemSet::on_update(GameState::Overworld).with_system(input_player_movement),
-        )
+        .add_system(input_player_movement)
         // Map the components to match project structs
         // Tiles
         .register_ldtk_int_cell::<components::WallBundle>(1)

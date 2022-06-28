@@ -1,6 +1,6 @@
 use bevy::{prelude::*, ui::FocusPolicy};
 
-use crate::{ascii::AsciiSheet, fadeout::create_fadeout, GameState};
+use crate::{ascii::AsciiSheet, fadeout::create_fadeout, GameState, GetGameState};
 
 pub struct MainMenuPlugin;
 
@@ -22,10 +22,11 @@ impl Plugin for MainMenuPlugin {
     }
 }
 
-fn despawn_menu(mut commands: Commands, button_query: Query<Entity, With<Button>>) {
+fn despawn_menu(mut commands: Commands, button_query: Query<Entity, With<Button>>, mut get_game_state: ResMut<GetGameState>) {
     for ent in button_query.iter() {
         commands.entity(ent).despawn_recursive();
     }
+    get_game_state.game_state = GameState::Overworld;
 }
 
 fn handle_start_button(
