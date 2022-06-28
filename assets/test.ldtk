@@ -397,7 +397,7 @@
 						},
 						{
 							"__identifier": "Pot",
-							"__grid": [13,8],
+							"__grid": [12,8],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": { "tilesetUid": 2, "x": 272, "y": 144, "w": 16, "h": 16 },
@@ -406,7 +406,7 @@
 							"width": 16,
 							"height": 32,
 							"defUid": 15,
-							"px": [208,128],
+							"px": [192,128],
 							"fieldInstances": []
 						}
 					]
