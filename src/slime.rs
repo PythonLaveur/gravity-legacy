@@ -9,6 +9,7 @@ use std::*;
 use crate::components::{AnimationTimer, Player, Slime, SpriteSize};
 use crate::slime_collision::Side;
 use crate::*;
+use crate::systems::WorldStatus;
 
 pub struct SlimePlugin;
 
@@ -16,8 +17,8 @@ impl Plugin for SlimePlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system_to_stage(StartupStage::PostStartup, slime_spawn_system)
             .add_system(player_keyboard_event_system)
-            .add_system(slime_sprite_update_system)
-            .add_system(slime_movement_system);
+            .add_system(slime_sprite_update_system);
+            //.add_system(slime_movement_system);
     }
 }
 
@@ -276,18 +277,20 @@ fn slime_sprite_update_system(
 
 pub fn player_keyboard_event_system(
     kb: Res<Input<KeyCode>>,
+    world_status: Res<WorldStatus>,
     mut query: Query<(&mut Velocity, &mut Slime), With<Player>>,
 ) {
     if let Ok((mut velocity, mut slime)) = query.get_single_mut() {
         if !slime.is_jumping {
             let curent_side = slime.side.numerize();
-            velocity.linear.x = if kb.pressed(KeyCode::Left) {
+            let left = if kb.pressed(KeyCode::Left) {
                 if !slime.is_walking && curent_side != 1 && curent_side != 3 {
                     slime.need_new_sprite = true;
                     slime.is_walking = true;
                 }
-                -1.
-            } else if kb.pressed(KeyCode::Right) {
+                1.
+            } else {0.};
+            let right = if kb.pressed(KeyCode::Right) {
                 if !slime.is_walking && curent_side != 1 && curent_side != 3 {
                     slime.need_new_sprite = true;
                     slime.is_walking = true;
@@ -296,6 +299,18 @@ pub fn player_keyboard_event_system(
             } else {
                 0.
             };
+
+            if world_status.rotation.y == 0. { 
+                velocity.linear.x = (right - left) * 200. * world_status.rotation.x; 
+            }
+            else {
+                velocity.linear.y = (right - left) * 200. * world_status.rotation.y; 
+            }
+            
+        }
+    
+            //TODO : Vérifier l'utilité de ce qui suit
+            /*
             velocity.linear.y = if kb.pressed(KeyCode::Down) {
                 if !slime.is_walking && curent_side != 0 && curent_side != 2 {
                     slime.need_new_sprite = true;
@@ -311,10 +326,12 @@ pub fn player_keyboard_event_system(
             } else {
                 0.
             };
-            if velocity.linear.x == 0. && velocity.linear.y == 0. && slime.is_walking {
-                slime.need_new_sprite = true;
-                slime.is_walking = false;
-            }
+        }*/
+
+        //Idle detection
+        if velocity.linear.x == 0. && velocity.linear.y == 0. && slime.is_walking {
+            slime.need_new_sprite = true;
+            slime.is_walking = false;
         }
         /*if kb.pressed(KeyCode::Space) { //saut
             slime.is_jumping = true;

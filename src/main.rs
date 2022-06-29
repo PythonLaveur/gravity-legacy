@@ -33,7 +33,7 @@ const PLAYER_WALK: &str = "walk.png";
 const PLAYER_WALK_SIZE: (f32, f32) = (23., 24.);
 const PLAYER_WALK_COLUMN: usize = 10;
 
-const PLAYER_SCALE: f32 = 1.;
+const PLAYER_SCALE: f32 = 0.7;
 const SECURITY_DISTANCE: f32 = 10.;
 const BASE_SPEED: f32 = 100.;
 
