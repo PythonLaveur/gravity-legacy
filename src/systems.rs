@@ -17,6 +17,15 @@ use heron::*;
 
 const PI: f32 = 3.1415;
 
+// region:     --- Ressources
+
+pub struct WorldStatus {
+    pub rotation: Vec2,
+}
+// endregion:  --- Ressources
+
+
+
 pub fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -41,6 +50,9 @@ pub fn setup(
 
     //Load the levels
     let ldtk_handle = asset_server.load(MAP_LDTK);
+
+    //insert ressource
+    commands.insert_resource(WorldStatus{rotation: Vec2::new(1., 0.)});
 
     //load textures atlases :
     let texture_handle = asset_server.load(PLAYER_JUMP);
@@ -242,45 +254,62 @@ pub fn spawn_wall_collision(
 pub fn world_rotation_system(
     input: Res<Input<KeyCode>>,
     mut gravity: ResMut<Gravity>,
-    get_game_state: Res<GetGameState>,
-    mut query: Query<&mut Transform, With<MainCamera>>,
+    mut world_status: ResMut<WorldStatus>,
+    mut query: Query<&mut Transform, With<MainCamera>>
 ) {
-    if get_game_state.game_state == GameState::Overworld {
-        //Rotate the camera
-        if let Ok(mut camera_tf) = query.get_single_mut() {
-            if input.just_pressed(KeyCode::R) {
-                //Rotate the camera
-                camera_tf.rotate(Quat::from_rotation_z(PI / 2.));
-                //Change gravity
-                let gravity = gravity.as_mut();
-                if gravity.vector().y < 0. {
-                    *gravity = Gravity::from(Vec3::new(2000., 0., 0.0));
-                } else if gravity.vector().x > 0. {
-                    *gravity = Gravity::from(Vec3::new(0., 2000., 0.0));
-                } else if gravity.vector().y > 0. {
-                    *gravity = Gravity::from(Vec3::new(-2000., 0., 0.0));
-                } else if gravity.vector().x < 0. {
-                    *gravity = Gravity::from(Vec3::new(0., -2000., 0.0));
-                }
+    //Rotate the camera
+    if let Ok(mut camera_tf) = query.get_single_mut() {
+        if input.just_pressed(KeyCode::R) {
+            //Rotate the camera
+            camera_tf.rotate(Quat::from_rotation_z(PI / 2.));
+            //Change gravity
+            let gravity = gravity.as_mut();
+            if gravity.vector().y < 0. {
+                *gravity = Gravity::from(Vec3::new(2000., 0., 0.0));
+                world_status.rotation = Vec2::new(0., 1.);
+            } else
+            if gravity.vector().x > 0. {
+                *gravity = Gravity::from(Vec3::new(0., 2000., 0.0));
+                world_status.rotation = Vec2::new(-1., 0.);
+            } else
+            if gravity.vector().y > 0. {
+                *gravity = Gravity::from(Vec3::new(-2000., 0., 0.0));
+                world_status.rotation = Vec2::new(0., -1.);
+            } else
+            if gravity.vector().x < 0. {
+                *gravity = Gravity::from(Vec3::new(0., -2000., 0.0));
+                world_status.rotation = Vec2::new(1., 0.);
+
             }
-            if input.just_pressed(KeyCode::T) {
-                //Rotate the camera
-                camera_tf.rotate(Quat::from_rotation_z(-PI / 2.));
-                //Change gravity
-                let gravity = gravity.as_mut();
-                if gravity.vector().y < 0. {
-                    *gravity = Gravity::from(Vec3::new(-2000., 0., 0.0));
-                } else if gravity.vector().x < 0. {
-                    *gravity = Gravity::from(Vec3::new(0., 2000., 0.0));
-                } else if gravity.vector().y > 0. {
-                    *gravity = Gravity::from(Vec3::new(2000., 0., 0.0));
-                } else if gravity.vector().x > 0. {
-                    *gravity = Gravity::from(Vec3::new(0., -2000., 0.0));
-                }
+
+        }
+        if input.just_pressed(KeyCode::T) {
+            //Rotate the camera
+            camera_tf.rotate(Quat::from_rotation_z(-PI / 2.));
+            //Change gravity
+            let gravity = gravity.as_mut();
+            if gravity.vector().y < 0. {
+                *gravity = Gravity::from(Vec3::new(-2000., 0., 0.0));
+                world_status.rotation = Vec2::new(0., -1.);
+            } else
+            if gravity.vector().x < 0. {
+                *gravity = Gravity::from(Vec3::new(0., 2000., 0.0));
+                world_status.rotation = Vec2::new(-1., 0.);
+            } else 
+            if gravity.vector().y > 0. {
+                *gravity = Gravity::from(Vec3::new(2000., 0., 0.0));
+                world_status.rotation = Vec2::new(0., 1.);
+            } else 
+            if gravity.vector().x > 0. {
+                *gravity = Gravity::from(Vec3::new(0., -2000., 0.0));
+                world_status.rotation = Vec2::new(1., 0.);
             }
         }
+
     }
 }
+
+
 
 pub fn animate_sprite_system(
     //mut commands: Commands,
