@@ -91,6 +91,7 @@ fn main() {
         })
         .add_startup_system(systems::setup)
         .add_system(world_rotation_system)
+        .add_system(player_collision_with_pot)
         .add_startup_system(background_audio)
         .add_system(systems::spawn_wall_collision)
         .add_system(systems::animate_sprite_system)

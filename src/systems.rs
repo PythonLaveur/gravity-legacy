@@ -6,6 +6,7 @@ use crate::{
 };
 
 use bevy::prelude::*;
+use bevy::sprite::collide_aabb::collide;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_kira_audio::Audio;
 
@@ -309,7 +310,40 @@ pub fn world_rotation_system(
     }
 }
 
-
+pub fn player_collision_with_pot (
+    pot_query: Query<Entity, With<Pot>>,
+    mut player: Query<Entity, With<Player>>,
+    mut collisions: EventReader<CollisionEvent>,
+) {
+    for collision in collisions.iter() {
+        match collision {
+            CollisionEvent::Started(collider_a, collider_b ) => {
+                if let Ok(mut player) = player.get_mut(collider_a.rigid_body_entity()) {
+                    if pot_query.get(collider_b.rigid_body_entity()).is_ok() {
+                        println!("Collision detected");
+                    }
+                }
+                if let Ok(mut player) = player.get_mut(collider_b.rigid_body_entity()) {
+                    if pot_query.get(collider_a.rigid_body_entity()).is_ok() {
+                        println!("Collision detected");
+                    }
+                }
+            }
+            CollisionEvent::Stopped(collider_aa, collider_bb ) => {
+                if let Ok(mut player) = player.get_mut(collider_aa.rigid_body_entity()) {
+                    if pot_query.get(collider_bb.rigid_body_entity()).is_ok() {
+                        println!("Collision stopped");
+                    }
+                }
+                if let Ok(mut player) = player.get_mut(collider_bb.rigid_body_entity()) {
+                    if pot_query.get(collider_aa.rigid_body_entity()).is_ok() {
+                        println!("Collision stopped");
+                    }
+                }
+            }
+        }
+    }
+}
 
 pub fn animate_sprite_system(
     //mut commands: Commands,
