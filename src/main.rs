@@ -61,6 +61,7 @@ pub enum GameState {
 pub struct GetGameState {
     game_state: GameState,
     level_index: usize,
+    player_spawned: bool,
 }
 
 // endregion: --- Assets constants

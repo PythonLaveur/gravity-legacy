@@ -3,7 +3,7 @@
 	"y": -1,
 	"width": 400,
 	"height": 400,
-	"iid": "3132b0f0-dbe0-11ec-9ee1-a94e06e0f3fe",
+	"iid": "885996f0-dbe0-11ec-9ee1-dfd582b09c5e",
 	"layers": [
 		"IntGrid.png",
 		"Tiles.png"
@@ -12,9 +12,9 @@
 		"Key": [
 			{
 				"id": "Key",
-				"iid": "3132b0f2-dbe0-11ec-9ee1-5d8a5809323f",
+				"iid": "885996f2-dbe0-11ec-9ee1-e94f3367d1e3",
 				"layer": "Entities",
-				"x": 224,
+				"x": 240,
 				"y": 208,
 				"width": 32,
 				"height": 32,
@@ -25,13 +25,26 @@
 		"Player": [
 			{
 				"id": "Player",
-				"iid": "3132d800-dbe0-11ec-9ee1-f90566b678f2",
+				"iid": "885996f3-dbe0-11ec-9ee1-9b2fb3a9c554",
 				"layer": "Entities",
-				"x": 144,
+				"x": 128,
 				"y": 208,
 				"width": 32,
 				"height": 32,
 				"color": 9755059,
+				"customFields" : {}
+			}
+		],
+		"Pot": [
+			{
+				"id": "Pot",
+				"iid": "885996f4-dbe0-11ec-9ee1-8f433366f8cd",
+				"layer": "Entities",
+				"x": 160,
+				"y": 192,
+				"width": 32,
+				"height": 46,
+				"color": 10976256,
 				"customFields" : {}
 			}
 		]
