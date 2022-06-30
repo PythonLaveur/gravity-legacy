@@ -313,7 +313,7 @@
 					"entityInstances": [
 						{
 							"__identifier": "Pot",
-							"__grid": [7,7],
+							"__grid": [8,5],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": { "tilesetUid": 2, "x": 272, "y": 144, "w": 16, "h": 16 },
@@ -322,12 +322,12 @@
 							"width": 16,
 							"height": 32,
 							"defUid": 15,
-							"px": [112,112],
+							"px": [128,80],
 							"fieldInstances": []
 						},
 						{
 							"__identifier": "Player",
-							"__grid": [1,14],
+							"__grid": [8,14],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": { "tilesetUid": 23, "x": 0, "y": 0, "w": 32, "h": 32 },
@@ -336,12 +336,12 @@
 							"width": 16,
 							"height": 16,
 							"defUid": 18,
-							"px": [16,224],
+							"px": [128,224],
 							"fieldInstances": []
 						},
 						{
 							"__identifier": "Pot",
-							"__grid": [5,11],
+							"__grid": [5,13],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": { "tilesetUid": 2, "x": 272, "y": 144, "w": 16, "h": 16 },
@@ -350,12 +350,12 @@
 							"width": 16,
 							"height": 32,
 							"defUid": 15,
-							"px": [80,176],
+							"px": [80,208],
 							"fieldInstances": []
 						},
 						{
 							"__identifier": "Pot",
-							"__grid": [2,11],
+							"__grid": [2,9],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": { "tilesetUid": 2, "x": 272, "y": 144, "w": 16, "h": 16 },
@@ -364,7 +364,7 @@
 							"width": 16,
 							"height": 32,
 							"defUid": 15,
-							"px": [32,176],
+							"px": [32,144],
 							"fieldInstances": []
 						},
 						{
