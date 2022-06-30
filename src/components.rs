@@ -62,7 +62,6 @@ impl From<EntityInstance> for ColliderBundle {
 
 impl From<IntGridCell> for ColliderBundle {
     fn from(int_grid_cell: IntGridCell) -> ColliderBundle {
-        println!("Setup grid");
         let rotation_constraints = RotationConstraints::lock();
 
         if int_grid_cell.value == 2 || int_grid_cell.value == 1 {
@@ -71,7 +70,7 @@ impl From<IntGridCell> for ColliderBundle {
                     half_extends: Vec3::new(8., 8., 0.),
                     border_radius: None,
                 },
-                rigid_body: RigidBody::Sensor,
+                rigid_body: RigidBody::Static,
                 rotation_constraints,
                 ..Default::default()
             }
@@ -89,6 +88,10 @@ pub struct Wall;
 #[derive(Clone, Debug, Default, Bundle, LdtkIntCell)]
 pub struct WallBundle {
     wall: Wall,
+    //The code below allows to spawn a collider for each cell, not very good performance wise
+    //#[from_int_grid_cell]
+    //#[bundle]
+    //pub collider_bundle: ColliderBundle,
 }
 
 #[derive(Copy, Clone, PartialEq, Debug, Default, Component)]

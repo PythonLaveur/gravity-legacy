@@ -121,7 +121,7 @@ fn spawn_level_system (
         if let Ok(mut camera_tf) = query.get_single_mut() { 
             camera_tf.rotation = Quat::from_axis_angle(Vec3::new(0., 0., 1.), 0.);
         }
+        *gravity = Gravity::from(Vec3::new(0., -2000., 0.0));
+        world_status.rotation = Vec2::new(1., 0.);
     }
-    *gravity = Gravity::from(Vec3::new(0., -2000., 0.0));
-    world_status.rotation = Vec2::new(1., 0.);
 }
