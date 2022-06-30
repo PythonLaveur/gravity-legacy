@@ -1,6 +1,6 @@
 {
-	"x": -128,
-	"y": -112,
+	"x": 0,
+	"y": 0,
 	"width": 256,
 	"height": 252,
 	"iid": "7e27c6e0-dbe0-11ec-ab46-d9f7ec65d1c7",
@@ -81,11 +81,24 @@
 				"id": "Player",
 				"iid": "7e83ea60-dbe0-11ec-bcfe-29f6d3fbf81f",
 				"layer": "Entities",
-				"x": 128,
+				"x": 16,
 				"y": 224,
 				"width": 16,
 				"height": 16,
 				"color": 9755059,
+				"customFields" : {}
+			}
+		],
+		"Key": [
+			{
+				"id": "Key",
+				"iid": "08a37280-dbe0-11ec-9f91-cf9dd02795cb",
+				"layer": "Entities",
+				"x": 224,
+				"y": 224,
+				"width": 16,
+				"height": 16,
+				"color": 16318208,
 				"customFields" : {}
 			}
 		]

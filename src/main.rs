@@ -21,15 +21,15 @@ mod start_menu;
 mod systems;
 
 //Player sprites
-const PLAYER_JUMP: &str = "jump.png";
+const PLAYER_JUMP: &str = "Sprites/Player/jump.png";
 const PLAYER_JUMP_SIZE: (f32, f32) = (24., 27.);
 const PLAYER_JUMP_COLUMN: usize = 8;
 
-const PLAYER_IDLE: &str = "idle.png";
+const PLAYER_IDLE: &str = "Sprites/Player/idle.png";
 const PLAYER_IDLE_SIZE: (f32, f32) = (22., 23.);
 const PLAYER_IDLE_COLUMN: usize = 8;
 
-const PLAYER_WALK: &str = "walk.png";
+const PLAYER_WALK: &str = "Sprites/Player/walk.png";
 const PLAYER_WALK_SIZE: (f32, f32) = (23., 24.);
 const PLAYER_WALK_COLUMN: usize = 10;
 
@@ -45,7 +45,7 @@ pub struct GameTextures {
 
 // region:    --- Assets constants
 pub const TILE_SIZE: f32 = 0.1;
-const MAP_LDTK: &str = "test.ldtk";
+const MAP_LDTK: &str = "Maps/Levels.ldtk";
 pub const CLEAR: Color = Color::rgb(0.1, 0.1, 0.1);
 
 //const TILE_SIZE: f32 = 16.;
@@ -84,7 +84,7 @@ fn main() {
         .insert_resource(LevelSelection::Index(0))
         .insert_resource(LdtkSettings {
             level_spawn_behavior: LevelSpawnBehavior::UseWorldTranslation {
-                load_level_neighbors: true,
+                load_level_neighbors: false,
             },
             set_clear_color: SetClearColor::FromLevelBackground,
             ..Default::default()
@@ -101,6 +101,7 @@ fn main() {
         .register_ldtk_int_cell::<components::WallBundle>(2)
         //Entities
         .register_ldtk_entity::<components::PotBundle>("Pot")
+        .register_ldtk_entity::<components::KeyBundle>("Key")
         .run();
 }
 
