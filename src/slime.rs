@@ -42,7 +42,7 @@ fn read_user_from_file<P: AsRef<Path>>(path: P) -> io::Result<Value> {
 */
 
 fn slime_spawn_system(mut commands: Commands, game_textures: Res<GameTextures>) {
-    let v: Value = read_user_from_file("assets/test/simplified/Level_0/data.json").unwrap();
+    let v: Value = read_user_from_file("assets/Maps/Level_0/data.json").unwrap();
     let x = v["entities"]["Player"][0]["x"].as_f64().unwrap() as f32;
     let y = v["entities"]["Player"][0]["y"].as_f64().unwrap() as f32;
     //let window = windows.get_primary_mut().unwrap();
@@ -94,23 +94,23 @@ fn slime_spawn_system(mut commands: Commands, game_textures: Res<GameTextures>) 
 
 fn slime_movement_system(
     time: Res<Time>,
-    mut query: Query<(&Velocity, &mut Transform, &mut Slime)>,
+    mut query: Query<(&mut Velocity, &mut Transform, &mut Slime)>,
 ) {
-    for (velocity, mut transform, mut slime) in query.iter_mut() {
-        let translation = &mut transform.translation;
+    for (mut velocity, mut transform, mut slime) in query.iter_mut() {
+        let translation = &mut velocity;
         if slime.stop_timer != 0 {
             slime.stop_timer -= 1;
         } else {
             match slime.side {
                 Side::Left => {
-                    translation.y += velocity.linear.y * time.delta_seconds() * BASE_SPEED
+                    translation.linear.y = BASE_SPEED
                 }
                 Side::Right => {
-                    translation.y += velocity.linear.y * time.delta_seconds() * BASE_SPEED
+                    translation.linear.y = BASE_SPEED
                 }
-                Side::Top => translation.x += velocity.linear.x * time.delta_seconds() * BASE_SPEED,
+                Side::Top => translation.linear.x = BASE_SPEED,
                 Side::Bottom => {
-                    translation.x += velocity.linear.x * time.delta_seconds() * BASE_SPEED
+                    translation.linear.x = BASE_SPEED
                 }
                 Side::Inside => (),
             }
