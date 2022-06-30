@@ -41,8 +41,11 @@ pub fn setup(
     //Camera setup
     let mut camera = OrthographicCameraBundle::new_2d();
     //Offset
+    /*TODO : SET CAMERA AT CURRENT LEVEL LOCATION USING THE FOLLOWING IDEA
+        x = level_x + level_width/2 
+        y = level_y + level_width/2 */
     camera.transform = Transform {
-        translation: Vec3::new(0., 128., 1000.),
+        translation: Vec3::new(128., 128., 1000.),
         ..default()
     };
     commands.spawn_bundle(camera).insert(MainCamera);

@@ -42,9 +42,13 @@ fn read_user_from_file<P: AsRef<Path>>(path: P) -> io::Result<Value> {
 */
 
 fn slime_spawn_system(mut commands: Commands, game_textures: Res<GameTextures>) {
-    let v: Value = read_user_from_file("assets/Maps/Level_0/data.json").unwrap();
+    //TODO change to fit with level selection
+    let v: Value = read_user_from_file("assets/Maps/Levels/simplified/Level_0/data.json").unwrap();
     let x = v["entities"]["Player"][0]["x"].as_f64().unwrap() as f32;
     let y = v["entities"]["Player"][0]["y"].as_f64().unwrap() as f32;
+    let world_x: f32 = v["x"].as_f64().unwrap() as f32;
+    let world_y: f32 = v["y"].as_f64().unwrap() as f32;
+    let world_height : f32 =  v["height"].as_f64().unwrap() as f32;
     //let window = windows.get_primary_mut().unwrap();
     commands
         .spawn_bundle(SpriteSheetBundle {
@@ -52,8 +56,8 @@ fn slime_spawn_system(mut commands: Commands, game_textures: Res<GameTextures>) 
             transform: Transform {
                 scale: Vec3::new(PLAYER_SCALE, PLAYER_SCALE, 1.),
                 translation: Vec3::new(
-                    x - 128. + PLAYER_IDLE_SIZE.0 / 2.,
-                    -(y - 112. - 128.) + PLAYER_IDLE_SIZE.1 / 2.,
+                    x + world_x + PLAYER_IDLE_SIZE.0 / 2.,
+                    world_height - (y + world_y) + PLAYER_IDLE_SIZE.1 / 2.,
                     10.,
                 ),
                 ..Default::default()
