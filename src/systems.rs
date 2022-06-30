@@ -23,6 +23,12 @@ const PI: f32 = 3.1415;
 pub struct WorldStatus {
     pub rotation: Vec2,
 }
+
+#[derive(Default)]
+pub struct CollisionCnt {
+    pub with_pots: u32,
+    pub with_walls: u32,
+}
 // endregion:  --- Ressources
 
 
@@ -45,7 +51,6 @@ pub fn setup(
     commands.insert_resource(GetGameState {
         game_state: GameState::StartMenu,
     });
-
     //Enable to recall the setup but ignoring the code before
     asset_server.watch_for_changes().unwrap();
 
@@ -54,6 +59,8 @@ pub fn setup(
 
     //insert ressource
     commands.insert_resource(WorldStatus{rotation: Vec2::new(1., 0.)});
+    commands.insert_resource(CollisionCnt::default());
+
 
     //load textures atlases :
     let texture_handle = asset_server.load(PLAYER_JUMP);
@@ -311,6 +318,7 @@ pub fn world_rotation_system(
 }
 
 pub fn player_collision_with_pot (
+    mut collision_cnt: ResMut<CollisionCnt>,
     pot_query: Query<Entity, With<Pot>>,
     mut player: Query<Entity, With<Player>>,
     mut collisions: EventReader<CollisionEvent>,
