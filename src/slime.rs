@@ -41,9 +41,12 @@ fn read_user_from_file<P: AsRef<Path>>(path: P) -> io::Result<Value> {
 
 */
 
-fn slime_spawn_system(mut commands: Commands, game_textures: Res<GameTextures>) {
+fn slime_spawn_system(mut commands: Commands,
+    game_textures: Res<GameTextures>,
+    get_game_state: Res<GetGameState>
+) {
     //TODO change to fit with level selection
-    let v: Value = read_user_from_file("assets/Maps/Levels/simplified/Level_0/data.json").unwrap();
+    let v: Value = read_user_from_file(format!("assets/Maps/Levels/simplified/Level_{}/data.json", get_game_state.level_index)).unwrap();
     let x = v["entities"]["Player"][0]["x"].as_f64().unwrap() as f32;
     let y = v["entities"]["Player"][0]["y"].as_f64().unwrap() as f32;
     let world_x: f32 = v["x"].as_f64().unwrap() as f32;

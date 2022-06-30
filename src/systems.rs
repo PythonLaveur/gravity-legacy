@@ -118,7 +118,6 @@ pub fn spawn_wall_collision(
     wall_query: Query<(&GridCoords, &Parent), Added<Wall>>,
     parent_query: Query<&Parent, Without<Wall>>,
     level_query: Query<(Entity, &Handle<LdtkLevel>)>,
-    mut get_game_status: ResMut<GetGameState>,
     levels: Res<Assets<LdtkLevel>>,
 ) {
     /// Represents a wide wall that is 1 tile tall
@@ -332,24 +331,24 @@ pub fn player_collision_with_pot (
             CollisionEvent::Started(collider_a, collider_b ) => {
                 if let Ok(mut player) = player.get_mut(collider_a.rigid_body_entity()) {
                     if pot_query.get(collider_b.rigid_body_entity()).is_ok() {
-                        println!("Collision detected");
+                        //println!("Collision detected");
                     }
                 }
                 if let Ok(mut player) = player.get_mut(collider_b.rigid_body_entity()) {
                     if pot_query.get(collider_a.rigid_body_entity()).is_ok() {
-                        println!("Collision detected");
+                        //println!("Collision detected");
                     }
                 }
             }
             CollisionEvent::Stopped(collider_aa, collider_bb ) => {
                 if let Ok(mut player) = player.get_mut(collider_aa.rigid_body_entity()) {
                     if pot_query.get(collider_bb.rigid_body_entity()).is_ok() {
-                        println!("Collision stopped");
+                        //println!("Collision stopped");
                     }
                 }
                 if let Ok(mut player) = player.get_mut(collider_bb.rigid_body_entity()) {
                     if pot_query.get(collider_aa.rigid_body_entity()).is_ok() {
-                        println!("Collision stopped");
+                        //println!("Collision stopped");
                     }
                 }
             }
@@ -376,6 +375,31 @@ pub fn animate_sprite_system(
         if timer.just_finished() {
             let texture_atlas = texture_atlases.get(texture_atlas_handle).unwrap();
             sprite.index = (sprite.index + 1) % texture_atlas.textures.len();
+        }
+    }
+}
+
+pub fn player_succeed(
+    commands: Commands,
+    key: Query<Entity, With<Key>>,
+    mut player: Query<Entity, With<Player>>,
+    mut collisions: EventReader<CollisionEvent>,
+) {
+    for collision in collisions.iter() {
+        match collision {
+            CollisionEvent::Started(collider_a, collider_b ) => {
+                if let Ok(mut player) = player.get_mut(collider_a.rigid_body_entity()) {
+                    if key.get(collider_b.rigid_body_entity()).is_ok() {
+                        println!("Player win");
+                    }
+                }
+                if let Ok(mut player) = player.get_mut(collider_b.rigid_body_entity()) {
+                    if key.get(collider_a.rigid_body_entity()).is_ok() {
+                        println!("Player win");
+                    }
+                }
+            }
+            CollisionEvent::Stopped(_, _) => (),
         }
     }
 }

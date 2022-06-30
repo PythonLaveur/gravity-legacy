@@ -51,7 +51,7 @@ impl From<EntityInstance> for ColliderBundle {
                     half_extends: Vec3::new(8., 8., 0.),
                     border_radius: None,
                 },
-                rigid_body: RigidBody::Static,
+                rigid_body: RigidBody::Sensor,
                 rotation_constraints,
                 ..Default::default()
             },
@@ -113,6 +113,9 @@ pub struct PotBundle {
     entity_instance: EntityInstance,
 }
 
+#[derive(Copy, Clone, PartialEq, Debug, Default, Component)]
+pub struct Key;
+
 #[derive(Clone, Default, Bundle, LdtkEntity)]
 pub struct KeyBundle {
     #[sprite_bundle("Sprites/Items/Checkpoints/flag.png")]
@@ -121,7 +124,7 @@ pub struct KeyBundle {
     #[from_entity_instance]
     #[bundle]
     pub collider_bundle: ColliderBundle,
-    pub pot: Pot,
+    pub pot: Key,
     pub ground_detection: GroundDetection,
 
     // The whole EntityInstance can be stored directly as an EntityInstance component
