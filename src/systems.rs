@@ -53,6 +53,7 @@ pub fn setup(
     //Add ressources
     commands.insert_resource(GetGameState {
         game_state: GameState::StartMenu,
+        level_index: 0,
     });
     //Enable to recall the setup but ignoring the code before
     asset_server.watch_for_changes().unwrap();
@@ -117,6 +118,7 @@ pub fn spawn_wall_collision(
     wall_query: Query<(&GridCoords, &Parent), Added<Wall>>,
     parent_query: Query<&Parent, Without<Wall>>,
     level_query: Query<(Entity, &Handle<LdtkLevel>)>,
+    mut get_game_status: ResMut<GetGameState>,
     levels: Res<Assets<LdtkLevel>>,
 ) {
     /// Represents a wide wall that is 1 tile tall
@@ -126,7 +128,7 @@ pub fn spawn_wall_collision(
         left: i32,
         right: i32,
     }
-
+    
     // consider where the walls are
     // storing them as GridCoords in a HashSet for quick, easy lookup
     let mut level_to_wall_locations: HashMap<Entity, HashSet<GridCoords>> = HashMap::new();
@@ -141,7 +143,7 @@ pub fn spawn_wall_collision(
                 .insert(grid_coords);
         }
     });
-
+    
     if !wall_query.is_empty() {
         level_query.for_each(|(level_entity, level_handle)| {
             if let Some(level_walls) = level_to_wall_locations.get(&level_entity) {
@@ -261,7 +263,6 @@ pub fn spawn_wall_collision(
         });
     }
 }
-
 pub fn world_rotation_system(
     input: Res<Input<KeyCode>>,
     mut gravity: ResMut<Gravity>,

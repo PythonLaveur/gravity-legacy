@@ -103,8 +103,6 @@ pub struct PotBundle {
     #[bundle]
     pub collider_bundle: ColliderBundle,
     pub pot: Pot,
-    #[worldly]
-    pub worldly: Worldly,
     pub ground_detection: GroundDetection,
 
     // The whole EntityInstance can be stored directly as an EntityInstance component
@@ -121,8 +119,6 @@ pub struct KeyBundle {
     #[bundle]
     pub collider_bundle: ColliderBundle,
     pub pot: Pot,
-    #[worldly]
-    pub worldly: Worldly,
     pub ground_detection: GroundDetection,
 
     // The whole EntityInstance can be stored directly as an EntityInstance component
