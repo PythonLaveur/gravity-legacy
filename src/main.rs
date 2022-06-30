@@ -61,6 +61,7 @@ pub enum GameState {
 pub struct GetGameState {
     game_state: GameState,
     level_index: usize,
+    respawn_level: u8,
     player_spawned: bool,
 }
 
@@ -98,13 +99,15 @@ fn main() {
         .add_system(player_collision_with_pot)
         .add_startup_system(background_audio)
         .add_system(systems::animate_sprite_system)
-        //.add_system(spawn_level_system)
+        .add_system(spawn_level_system)
         .add_system(animation_to_spawn_system)
         .add_system(animation_system)
+        .add_system(player_collision_with_spikes)
         // Map the components to match project structs
         // Tiles
         .register_ldtk_int_cell::<components::WallBundle>(1)
         .register_ldtk_int_cell::<components::WallBundle>(2)
+        .register_ldtk_int_cell::<components::SpikesBundle>(3)
         //Entities
         .register_ldtk_entity::<components::PotBundle>("Pot")
         .register_ldtk_entity::<components::KeyBundle>("Key")
@@ -113,20 +116,10 @@ fn main() {
 
 fn spawn_level_system (
     mut commands: Commands,
-    input: Res<Input<KeyCode>>,
-    mut gravity: ResMut<Gravity>,
-    mut world_status: ResMut<WorldStatus>,
     mut get_game_state: ResMut<GetGameState>,
-    mut query: Query<&mut Transform, With<MainCamera>>
 ) {
-    if input.just_pressed(KeyCode::L) {
-        commands.insert_resource(LevelSelection::Index(1));
-        get_game_state.level_index = 1;
-         //Reset the gravity
-        if let Ok(mut camera_tf) = query.get_single_mut() { 
-            camera_tf.rotation = Quat::from_axis_angle(Vec3::new(0., 0., 1.), 0.);
+    if get_game_state.respawn_level > 0 {
+        commands.insert_resource(LevelSelection::Index(get_game_state.level_index));
+        get_game_state.respawn_level -= 1;
         }
-        *gravity = Gravity::from(Vec3::new(0., -2000., 0.0));
-        world_status.rotation = Vec2::new(1., 0.);
-    }
 }
