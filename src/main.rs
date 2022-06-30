@@ -42,6 +42,7 @@ pub struct GameTextures {
     player_idle: Handle<TextureAtlas>,
     player_jump: Handle<TextureAtlas>,
     player_walk: Handle<TextureAtlas>,
+    explosion: Handle<TextureAtlas>,
 }
 
 // region:    --- Assets constants
@@ -96,7 +97,9 @@ fn main() {
         .add_system(player_collision_with_pot)
         .add_startup_system(background_audio)
         .add_system(systems::animate_sprite_system)
-        .add_system(spawn_level_system)
+        //.add_system(spawn_level_system)
+        .add_system(animation_to_spawn_system)
+        .add_system(animation_system)
         // Map the components to match project structs
         // Tiles
         .register_ldtk_int_cell::<components::WallBundle>(1)

@@ -5,6 +5,8 @@ use std::collections::HashSet;
 
 use heron::prelude::*;
 
+use crate::systems::Animation;
+
 // region: --- common structs
 
 #[derive(Component)]
@@ -112,6 +114,12 @@ pub struct PotBundle {
     #[from_entity_instance]
     entity_instance: EntityInstance,
 }
+
+#[derive(Component)]
+pub struct AnimationToSpawn(pub Vec3, pub Animation);
+
+#[derive(Component)]
+pub struct FxAnimationTimer(pub Timer, pub usize);
 
 #[derive(Copy, Clone, PartialEq, Debug, Default, Component)]
 pub struct Key;
