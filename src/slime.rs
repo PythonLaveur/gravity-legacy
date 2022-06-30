@@ -15,7 +15,7 @@ pub struct SlimePlugin;
 
 impl Plugin for SlimePlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system_to_stage(StartupStage::PostStartup, slime_spawn_system)
+        app.add_system(slime_spawn_system)
             .add_system(player_keyboard_event_system)
             .add_system(slime_sprite_update_system);
             //.add_system(slime_movement_system);
@@ -41,59 +41,64 @@ fn read_user_from_file<P: AsRef<Path>>(path: P) -> io::Result<Value> {
 
 */
 
-fn slime_spawn_system(mut commands: Commands, game_textures: Res<GameTextures>) {
-    //TODO change to fit with level selection
-    let v: Value = read_user_from_file("assets/Maps/Levels/simplified/Level_0/data.json").unwrap();
-    let x = v["entities"]["Player"][0]["x"].as_f64().unwrap() as f32;
-    let y = v["entities"]["Player"][0]["y"].as_f64().unwrap() as f32;
-    let world_x: f32 = v["x"].as_f64().unwrap() as f32;
-    let world_y: f32 = v["y"].as_f64().unwrap() as f32;
-    let world_height : f32 =  v["height"].as_f64().unwrap() as f32;
-    //let window = windows.get_primary_mut().unwrap();
-    commands
-        .spawn_bundle(SpriteSheetBundle {
-            texture_atlas: game_textures.player_idle.clone(),
-            transform: Transform {
-                scale: Vec3::new(PLAYER_SCALE, PLAYER_SCALE, 1.),
-                translation: Vec3::new(
-                    x + world_x + PLAYER_IDLE_SIZE.0 / 2.,
-                    world_height - (y + world_y) + PLAYER_IDLE_SIZE.1 / 2.,
-                    10.,
-                ),
+fn slime_spawn_system(mut commands: Commands,
+    game_textures: Res<GameTextures>,
+    mut get_game_state: ResMut<GetGameState>
+) {
+    if !get_game_state.player_spawned {
+        let v: Value = read_user_from_file(format!("assets/Maps/Levels/simplified/Level_{}/data.json", get_game_state.level_index)).unwrap();
+        let x = v["entities"]["Player"][0]["x"].as_f64().unwrap() as f32;
+        let y = v["entities"]["Player"][0]["y"].as_f64().unwrap() as f32;
+        let world_x: f32 = v["x"].as_f64().unwrap() as f32;
+        let world_y: f32 = v["y"].as_f64().unwrap() as f32;
+        let world_height : f32 =  v["height"].as_f64().unwrap() as f32;
+        //let window = windows.get_primary_mut().unwrap();
+        commands
+            .spawn_bundle(SpriteSheetBundle {
+                texture_atlas: game_textures.player_idle.clone(),
+                transform: Transform {
+                    scale: Vec3::new(PLAYER_SCALE, PLAYER_SCALE, 1.),
+                    translation: Vec3::new(
+                        x + world_x + PLAYER_IDLE_SIZE.0 / 2.,
+                        world_height - (y + world_y) + PLAYER_IDLE_SIZE.1 / 2.,
+                        10.,
+                    ),
+                    ..Default::default()
+                },
                 ..Default::default()
-            },
-            ..Default::default()
-        })
-        .insert(Slime {
-            side: Side::Bottom,
-            side_before: Side::Bottom,
-            lenght_on_side: PLAYER_IDLE_SIZE.0 * PLAYER_SCALE,
-            depth: 0.,
-            is_jumping: false,
-            is_walking: false,
-            need_new_sprite: false,
-            stop_timer: 0,
-        })
-        .insert(Player)
-        .insert(Velocity::from_linear(Vec3::ZERO))
-        .insert(SpriteSize {
-            val: Vec2::new(
-                PLAYER_IDLE_SIZE.0 * PLAYER_SCALE,
-                PLAYER_IDLE_SIZE.1 * PLAYER_SCALE,
-            ),
-        })
-        .insert(AnimationTimer(Timer::from_seconds(0.15, true)))
-        .insert(CollisionShape::Cuboid {
-            half_extends: Vec3::new(
-                PLAYER_IDLE_SIZE.0 * PLAYER_SCALE / 2.,
-                PLAYER_IDLE_SIZE.1 * PLAYER_SCALE / 2.,
-                0.,
-            ),
-            border_radius: None,
-        })
-        .insert(RigidBody::Dynamic)
-        .insert(RotationConstraints::lock())
-        .insert(PhysicMaterial::default());
+            })
+            .insert(Slime {
+                side: Side::Bottom,
+                side_before: Side::Bottom,
+                lenght_on_side: PLAYER_IDLE_SIZE.0 * PLAYER_SCALE,
+                depth: 0.,
+                is_jumping: false,
+                is_walking: false,
+                need_new_sprite: false,
+                stop_timer: 0,
+            })
+            .insert(Player)
+            .insert(Velocity::from_linear(Vec3::ZERO))
+            .insert(SpriteSize {
+                val: Vec2::new(
+                    PLAYER_IDLE_SIZE.0 * PLAYER_SCALE,
+                    PLAYER_IDLE_SIZE.1 * PLAYER_SCALE,
+                ),
+            })
+            .insert(AnimationTimer(Timer::from_seconds(0.15, true)))
+            .insert(CollisionShape::Cuboid {
+                half_extends: Vec3::new(
+                    PLAYER_IDLE_SIZE.0 * PLAYER_SCALE / 2.,
+                    PLAYER_IDLE_SIZE.1 * PLAYER_SCALE / 2.,
+                    0.,
+                ),
+                border_radius: None,
+            })
+            .insert(RigidBody::Dynamic)
+            .insert(RotationConstraints::lock())
+            .insert(PhysicMaterial::default());
+            get_game_state.player_spawned = true;
+    }
 }
 
 fn slime_movement_system(

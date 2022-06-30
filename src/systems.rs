@@ -6,7 +6,6 @@ use crate::{
 };
 
 use bevy::prelude::*;
-use bevy::sprite::collide_aabb::collide;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_kira_audio::Audio;
 
@@ -17,17 +16,16 @@ use heron::{CollisionShape, PhysicMaterial, RigidBody};
 use heron::*;
 
 const PI: f32 = 3.1415;
+const ANIMATION_LEN: u32 = 6;
+
+pub enum Animation {
+    Explosion,
+}
 
 // region:     --- Ressources
 
 pub struct WorldStatus {
     pub rotation: Vec2,
-}
-
-#[derive(Default)]
-pub struct CollisionCnt {
-    pub with_pots: u32,
-    pub with_walls: u32,
 }
 // endregion:  --- Ressources
 
@@ -45,7 +43,7 @@ pub fn setup(
         x = level_x + level_width/2 
         y = level_y + level_width/2 */
     camera.transform = Transform {
-        translation: Vec3::new(128., 128., 1000.),
+        translation: Vec3::new(200., 200., 1000.),
         ..default()
     };
     commands.spawn_bundle(camera).insert(MainCamera);
@@ -54,7 +52,9 @@ pub fn setup(
     commands.insert_resource(GetGameState {
         game_state: GameState::StartMenu,
         level_index: 0,
+        player_spawned: false,
     });
+
     //Enable to recall the setup but ignoring the code before
     asset_server.watch_for_changes().unwrap();
 
@@ -63,7 +63,6 @@ pub fn setup(
 
     //insert ressource
     commands.insert_resource(WorldStatus{rotation: Vec2::new(1., 0.)});
-    commands.insert_resource(CollisionCnt::default());
 
 
     //load textures atlases :
@@ -94,10 +93,16 @@ pub fn setup(
     );
     let player_walk = texture_atlases.add(texture_atlas);
 
+    // create explosion texture atlas
+    let explosion_atlas = asset_server.load("Sprites/Items/Fruits/Collected.png");
+    let texture_atlas = TextureAtlas::from_grid(explosion_atlas, Vec2::new(32., 32.), 6, 1);
+    let explosion = texture_atlases.add(texture_atlas);
+
     let game_textures = GameTextures {
         player_idle,
         player_jump,
         player_walk,
+        explosion,
     };
     commands.insert_resource(game_textures);
 
@@ -118,7 +123,6 @@ pub fn spawn_wall_collision(
     wall_query: Query<(&GridCoords, &Parent), Added<Wall>>,
     parent_query: Query<&Parent, Without<Wall>>,
     level_query: Query<(Entity, &Handle<LdtkLevel>)>,
-    mut get_game_status: ResMut<GetGameState>,
     levels: Res<Assets<LdtkLevel>>,
 ) {
     /// Represents a wide wall that is 1 tile tall
@@ -322,7 +326,6 @@ pub fn world_rotation_system(
 }
 
 pub fn player_collision_with_pot (
-    mut collision_cnt: ResMut<CollisionCnt>,
     pot_query: Query<Entity, With<Pot>>,
     mut player: Query<Entity, With<Player>>,
     mut collisions: EventReader<CollisionEvent>,
@@ -332,24 +335,24 @@ pub fn player_collision_with_pot (
             CollisionEvent::Started(collider_a, collider_b ) => {
                 if let Ok(mut player) = player.get_mut(collider_a.rigid_body_entity()) {
                     if pot_query.get(collider_b.rigid_body_entity()).is_ok() {
-                        println!("Collision detected");
+                        //println!("Collision detected");
                     }
                 }
                 if let Ok(mut player) = player.get_mut(collider_b.rigid_body_entity()) {
                     if pot_query.get(collider_a.rigid_body_entity()).is_ok() {
-                        println!("Collision detected");
+                        //println!("Collision detected");
                     }
                 }
             }
             CollisionEvent::Stopped(collider_aa, collider_bb ) => {
                 if let Ok(mut player) = player.get_mut(collider_aa.rigid_body_entity()) {
                     if pot_query.get(collider_bb.rigid_body_entity()).is_ok() {
-                        println!("Collision stopped");
+                        //println!("Collision stopped");
                     }
                 }
                 if let Ok(mut player) = player.get_mut(collider_bb.rigid_body_entity()) {
                     if pot_query.get(collider_aa.rigid_body_entity()).is_ok() {
-                        println!("Collision stopped");
+                        //println!("Collision stopped");
                     }
                 }
             }
@@ -376,6 +379,121 @@ pub fn animate_sprite_system(
         if timer.just_finished() {
             let texture_atlas = texture_atlases.get(texture_atlas_handle).unwrap();
             sprite.index = (sprite.index + 1) % texture_atlas.textures.len();
+        }
+    }
+}
+
+pub fn player_succeed(
+    mut commands: Commands,
+    key: Query<Entity, With<Key>>,
+    player: Query<(Entity, &Transform), With<Player>>,
+    mut collisions: EventReader<CollisionEvent>,
+    mut world_status: ResMut<WorldStatus>,
+    mut gravity: ResMut<Gravity>,
+    mut get_game_state: ResMut<GetGameState>,
+    mut query: Query<&mut Transform, (With<MainCamera>, Without<Player>)>
+) {
+    for collision in collisions.iter() {
+        match collision {
+            CollisionEvent::Started(collider_a, collider_b ) => {
+                if let Ok((player, tf)) = player.get(collider_a.rigid_body_entity()) {
+                    if key.get(collider_b.rigid_body_entity()).is_ok() {
+                            // Despawn the player
+                            commands.entity(player).despawn();
+                            get_game_state.player_spawned = false;
+
+                            // Spawn the animation
+                           commands.spawn().insert(AnimationToSpawn(tf.translation.clone(), Animation::Explosion));
+                            
+                            // Spawn the next level after a delai (fade out)
+                            get_game_state.level_index += 1;
+                            commands.insert_resource(LevelSelection::Index(get_game_state.level_index));
+                            
+                            //Reset the gravity
+                            if let Ok(mut camera_tf) = query.get_single_mut() { 
+                                camera_tf.rotation = Quat::from_axis_angle(Vec3::new(0., 0., 1.), 0.);
+                            }
+                            *gravity = Gravity::from(Vec3::new(0., -2000., 0.0));
+                            world_status.rotation = Vec2::new(1., 0.)
+                    }
+                }
+                if let Ok((player, tf)) = player.get(collider_b.rigid_body_entity()) {
+                    if key.get(collider_a.rigid_body_entity()).is_ok() {
+                        // Despawn the player
+                        commands.entity(player).despawn();
+                        get_game_state.player_spawned = false;
+
+                        // Spawn the animation
+                       commands.spawn().insert(AnimationToSpawn(tf.translation.clone(), Animation::Explosion));
+                        
+                        // Spawn the next level after a delai (fade out)
+                        get_game_state.level_index += 1;
+                        commands.insert_resource(LevelSelection::Index(get_game_state.level_index));
+                        
+                        //Reset the gravity
+                        if let Ok(mut camera_tf) = query.get_single_mut() { 
+                            camera_tf.rotation = Quat::from_axis_angle(Vec3::new(0., 0., 1.), 0.);
+                        }
+                        *gravity = Gravity::from(Vec3::new(0., -2000., 0.0));
+                        world_status.rotation = Vec2::new(1., 0.)
+                    }
+                }
+            }
+            CollisionEvent::Stopped(_, _) => (),
+        }
+    }
+}
+
+pub fn animation_to_spawn_system(
+    audio: Res<Audio>,
+    mut commands: Commands,
+    game_textures: Res<GameTextures>,
+    query: Query<(Entity, &AnimationToSpawn), With<AnimationToSpawn>>,
+) {
+    for (animation_spawn_entity, animation_to_spawn) in query.iter() {
+        // animation above the player
+        let translation = Vec3::new(
+            animation_to_spawn.0.x,
+            animation_to_spawn.0.y,
+            animation_to_spawn.0.z + 1.,
+        );
+
+        //TODO : Choose the correct texture with animation_to_spawn.1 which is an enum Animation
+        let texture_atlas = game_textures.explosion.clone();
+        let max_index = 6;
+
+        // spawn the sprite
+        commands
+            .spawn_bundle(SpriteSheetBundle {
+                texture_atlas,
+                transform: Transform {
+                    translation,
+                    ..Default::default()
+                },
+                ..Default::default()
+            })
+            .insert(FxAnimationTimer(Timer::from_seconds(0.05, true), max_index));
+
+        // despawn the explosionToSpawn
+        commands.entity(animation_spawn_entity).despawn();
+
+        //Play level succeed audio
+        //audio.play(asset_server.load(EXPLOSION_AUDIO));
+    }
+}
+
+pub fn animation_system(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut query: Query<(Entity, &mut FxAnimationTimer, &mut TextureAtlasSprite), With<FxAnimationTimer>>,
+) {
+    for (entity, mut timer, mut sprite) in query.iter_mut() {
+        timer.0.tick(time.delta());
+        if timer.0.finished() {
+            sprite.index += 1; // move to next frame
+            if sprite.index >= timer.1 {
+                commands.entity(entity).despawn()
+            }
         }
     }
 }

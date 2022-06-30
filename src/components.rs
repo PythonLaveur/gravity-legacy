@@ -5,6 +5,8 @@ use std::collections::HashSet;
 
 use heron::prelude::*;
 
+use crate::systems::Animation;
+
 // region: --- common structs
 
 #[derive(Component)]
@@ -51,7 +53,7 @@ impl From<EntityInstance> for ColliderBundle {
                     half_extends: Vec3::new(8., 8., 0.),
                     border_radius: None,
                 },
-                rigid_body: RigidBody::Static,
+                rigid_body: RigidBody::Sensor,
                 rotation_constraints,
                 ..Default::default()
             },
@@ -113,6 +115,15 @@ pub struct PotBundle {
     entity_instance: EntityInstance,
 }
 
+#[derive(Component)]
+pub struct AnimationToSpawn(pub Vec3, pub Animation);
+
+#[derive(Component)]
+pub struct FxAnimationTimer(pub Timer, pub usize);
+
+#[derive(Copy, Clone, PartialEq, Debug, Default, Component)]
+pub struct Key;
+
 #[derive(Clone, Default, Bundle, LdtkEntity)]
 pub struct KeyBundle {
     #[sprite_bundle("Sprites/Items/Checkpoints/flag.png")]
@@ -121,7 +132,7 @@ pub struct KeyBundle {
     #[from_entity_instance]
     #[bundle]
     pub collider_bundle: ColliderBundle,
-    pub pot: Pot,
+    pub pot: Key,
     pub ground_detection: GroundDetection,
 
     // The whole EntityInstance can be stored directly as an EntityInstance component
