@@ -310,10 +310,10 @@ pub fn player_keyboard_event_system(
             };
 
             if world_status.rotation.y == 0. { 
-                velocity.linear.x = (right - left) * 200. * world_status.rotation.x; 
+                velocity.linear.x = (right - left) * 100. * world_status.rotation.x; 
             }
             else {
-                velocity.linear.y = (right - left) * 200. * world_status.rotation.y; 
+                velocity.linear.y = (right - left) * 100. * world_status.rotation.y; 
             }
             
         }

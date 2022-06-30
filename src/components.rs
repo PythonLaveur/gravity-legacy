@@ -76,9 +76,17 @@ impl From<IntGridCell> for ColliderBundle {
                 rotation_constraints,
                 ..Default::default()
             }
-        } else {
-            ColliderBundle::default()
-        }
+        } else if int_grid_cell.value == 3 {
+            ColliderBundle {
+                collider: CollisionShape::Cuboid {
+                    half_extends: Vec3::new(8., 8., 0.),
+                    border_radius: None,
+                },
+                rigid_body: RigidBody::Sensor,
+                rotation_constraints,
+                ..Default::default()
+            }
+        } else {ColliderBundle::default()}
     }
 }
 
@@ -113,6 +121,17 @@ pub struct PotBundle {
     // The whole EntityInstance can be stored directly as an EntityInstance component
     #[from_entity_instance]
     entity_instance: EntityInstance,
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
+pub struct Spikes;
+
+#[derive(Clone, Debug, Default, Bundle, LdtkIntCell)]
+pub struct SpikesBundle {
+    spikes: Spikes,
+    #[from_int_grid_cell]
+    #[bundle]
+    pub collider_bundle: ColliderBundle,
 }
 
 #[derive(Component)]
