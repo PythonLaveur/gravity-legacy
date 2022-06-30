@@ -3,6 +3,7 @@
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_kira_audio::AudioPlugin;
+use components::MainCamera;
 use slime::SlimePlugin;
 use std::env;
 //use components::PlayerBundle;
@@ -58,6 +59,7 @@ pub enum GameState {
 
 pub struct GetGameState {
     game_state: GameState,
+    level_index: usize,
 }
 
 // endregion: --- Assets constants
@@ -67,7 +69,7 @@ fn main() {
         .add_state(GameState::StartMenu)
         .insert_resource(ClearColor(CLEAR))
         .insert_resource(WindowDescriptor {
-            title: "RustyGame!".to_string(),
+            title: "Gravity Legacy 2".to_string(),
             width: 500.0,
             height: 300.0,
             ..Default::default()
@@ -83,18 +85,17 @@ fn main() {
         .insert_resource(Gravity::from(Vec3::new(0.0, -2000., 0.0)))
         .insert_resource(LevelSelection::Index(0))
         .insert_resource(LdtkSettings {
-            level_spawn_behavior: LevelSpawnBehavior::UseWorldTranslation {
-                load_level_neighbors: false,
-            },
+            level_spawn_behavior: LevelSpawnBehavior::UseZeroTranslation,
             set_clear_color: SetClearColor::FromLevelBackground,
             ..Default::default()
         })
         .add_startup_system(systems::setup)
+        .add_system(systems::spawn_wall_collision)
         .add_system(world_rotation_system)
         .add_system(player_collision_with_pot)
         .add_startup_system(background_audio)
-        .add_system(systems::spawn_wall_collision)
         .add_system(systems::animate_sprite_system)
+        .add_system(spawn_level_system)
         // Map the components to match project structs
         // Tiles
         .register_ldtk_int_cell::<components::WallBundle>(1)
@@ -105,4 +106,22 @@ fn main() {
         .run();
 }
 
-// system
+fn spawn_level_system (
+    mut commands: Commands,
+    input: Res<Input<KeyCode>>,
+    mut gravity: ResMut<Gravity>,
+    mut world_status: ResMut<WorldStatus>,
+    mut get_game_state: ResMut<GetGameState>,
+    mut query: Query<&mut Transform, With<MainCamera>>
+) {
+    if input.just_pressed(KeyCode::L) {
+        commands.insert_resource(LevelSelection::Index(1));
+        get_game_state.level_index = 1;
+         //Reset the gravity
+        if let Ok(mut camera_tf) = query.get_single_mut() { 
+            camera_tf.rotation = Quat::from_axis_angle(Vec3::new(0., 0., 1.), 0.);
+        }
+        *gravity = Gravity::from(Vec3::new(0., -2000., 0.0));
+        world_status.rotation = Vec2::new(1., 0.);
+    }
+}
