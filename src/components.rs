@@ -79,7 +79,7 @@ impl From<IntGridCell> for ColliderBundle {
         } else if int_grid_cell.value == 3 {
             ColliderBundle {
                 collider: CollisionShape::Cuboid {
-                    half_extends: Vec3::new(8., 8., 0.),
+                    half_extends: Vec3::new(5., 5., 0.),
                     border_radius: None,
                 },
                 rigid_body: RigidBody::Sensor,

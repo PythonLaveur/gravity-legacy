@@ -94,7 +94,7 @@ fn main() {
         .add_plugin(MainMenuPlugin)
         .add_plugin(SlimePlugin)
         .insert_resource(Gravity::from(Vec3::new(0.0, -2000., 0.0)))
-        .insert_resource(LevelSelection::Index(0))
+        .insert_resource(LevelSelection::Index(1))
         .insert_resource(LdtkSettings {
             level_spawn_behavior: LevelSpawnBehavior::UseZeroTranslation,
             set_clear_color: SetClearColor::FromLevelBackground,

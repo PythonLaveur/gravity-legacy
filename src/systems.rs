@@ -51,8 +51,8 @@ pub fn setup(
     //Add ressources
     commands.insert_resource(GetGameState {
         game_state: GameState::StartMenu,
-        level_index: 0,
-        respawn_level: 0,
+        level_index: 1,
+        respawn_level: 1,
         player_spawned: false,
     });
     commands.insert_resource(CollisionStatus::default());
