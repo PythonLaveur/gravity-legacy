@@ -36,13 +36,13 @@ impl From<EntityInstance> for ColliderBundle {
             },
             "Pot" => ColliderBundle {
                 collider: CollisionShape::Cuboid {
-                    half_extends: Vec3::new(8., 15., 0.),
+                    half_extends: Vec3::new(15., 22., 0.),
                     border_radius: None,
                 },
                 rigid_body: RigidBody::Dynamic,
                 rotation_constraints,
                 physic_material: PhysicMaterial {
-                    friction: 0.,
+                    friction: 0.01,
                     density: 15.0,
                     ..Default::default()
                 },

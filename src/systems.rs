@@ -251,7 +251,7 @@ pub fn spawn_wall_collision(
                         })
                         .insert(RigidBody::Static)
                         .insert(PhysicMaterial {
-                            friction: 0.,
+                            friction: 0.01,
                             ..Default::default()
                         })
                         .insert(Transform::from_xyz(
