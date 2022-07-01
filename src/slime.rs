@@ -2,15 +2,15 @@ use bevy::prelude::*;
 use bevy::sprite::collide_aabb::Collision;
 use serde_json::*;
 
+use crate::aud::*;
+use crate::components::{AnimationTimer, Player, Slime, SpriteSize};
+use crate::slime_collision::Side;
+use crate::systems::WorldStatus;
+use crate::*;
 use std::fs::File;
 use std::io::{self, BufReader};
 use std::path::Path;
 use std::*;
-
-use crate::components::{AnimationTimer, Player, Slime, SpriteSize};
-use crate::slime_collision::Side;
-use crate::*;
-use crate::systems::WorldStatus;
 
 pub struct SlimePlugin;
 
@@ -19,7 +19,7 @@ impl Plugin for SlimePlugin {
         app.add_system(slime_spawn_system)
             .add_system(player_keyboard_event_system)
             .add_system(slime_sprite_update_system);
-            //.add_system(slime_movement_system);
+        //.add_system(slime_movement_system);
     }
 }
 
@@ -42,17 +42,23 @@ fn read_user_from_file<P: AsRef<Path>>(path: P) -> io::Result<Value> {
 
 */
 
-fn slime_spawn_system(mut commands: Commands,
+fn slime_spawn_system(
+    mut commands: Commands,
     game_textures: Res<GameTextures>,
-    mut get_game_state: ResMut<GetGameState>
+    mut get_game_state: ResMut<GetGameState>,
+    mut event: EventWriter<SpawnEvent>,
 ) {
     if !get_game_state.player_spawned {
-        let v: Value = read_user_from_file(format!("assets/Maps/Levels/simplified/Level_{}/data.json", get_game_state.level_index)).unwrap();
+        let v: Value = read_user_from_file(format!(
+            "assets/Maps/Levels/simplified/Level_{}/data.json",
+            get_game_state.level_index
+        ))
+        .unwrap();
         let x = v["entities"]["Player"][0]["x"].as_f64().unwrap() as f32;
         let y = v["entities"]["Player"][0]["y"].as_f64().unwrap() as f32;
         let world_x: f32 = v["x"].as_f64().unwrap() as f32;
         let world_y: f32 = v["y"].as_f64().unwrap() as f32;
-        let world_height : f32 =  v["height"].as_f64().unwrap() as f32;
+        let world_height: f32 = v["height"].as_f64().unwrap() as f32;
         //let window = windows.get_primary_mut().unwrap();
         commands
             .spawn_bundle(SpriteSheetBundle {
@@ -98,7 +104,8 @@ fn slime_spawn_system(mut commands: Commands,
             .insert(RigidBody::Dynamic)
             .insert(RotationConstraints::lock())
             .insert(PhysicMaterial::default());
-            get_game_state.player_spawned = true;
+        get_game_state.player_spawned = true;
+        event.send(SpawnEvent);
     }
 }
 
@@ -112,16 +119,10 @@ fn slime_movement_system(
             slime.stop_timer -= 1;
         } else {
             match slime.side {
-                Side::Left => {
-                    translation.linear.y = BASE_SPEED
-                }
-                Side::Right => {
-                    translation.linear.y = BASE_SPEED
-                }
+                Side::Left => translation.linear.y = BASE_SPEED,
+                Side::Right => translation.linear.y = BASE_SPEED,
                 Side::Top => translation.linear.x = BASE_SPEED,
-                Side::Bottom => {
-                    translation.linear.x = BASE_SPEED
-                }
+                Side::Bottom => translation.linear.x = BASE_SPEED,
                 Side::Inside => (),
             }
         }
@@ -289,6 +290,7 @@ pub fn player_keyboard_event_system(
     kb: Res<Input<KeyCode>>,
     world_status: Res<WorldStatus>,
     mut query: Query<(&mut Velocity, &mut Slime), With<Player>>,
+    mut event: EventWriter<MoveEvent>,
 ) {
     if let Ok((mut velocity, mut slime)) = query.get_single_mut() {
         if !slime.is_jumping {
@@ -299,7 +301,9 @@ pub fn player_keyboard_event_system(
                     slime.is_walking = true;
                 }
                 1.
-            } else {0.};
+            } else {
+                0.
+            };
             let right = if kb.pressed(KeyCode::Right) {
                 if !slime.is_walking && curent_side != 1 && curent_side != 3 {
                     slime.need_new_sprite = true;
@@ -309,18 +313,22 @@ pub fn player_keyboard_event_system(
             } else {
                 0.
             };
-
-            if world_status.rotation.y == 0. { 
-                velocity.linear.x = (right - left) * 100. * world_status.rotation.x; 
+            //send event to play sound
+            if kb.just_pressed(KeyCode::Left) {
+                event.send(MoveEvent);
             }
-            else {
-                velocity.linear.y = (right - left) * 100. * world_status.rotation.y; 
+            if kb.just_pressed(KeyCode::Right) {
+                event.send(MoveEvent);
             }
-            
+            if world_status.rotation.y == 0. {
+                velocity.linear.x = (right - left) * 100. * world_status.rotation.x;
+            } else {
+                velocity.linear.y = (right - left) * 100. * world_status.rotation.y;
+            }
         }
-    
-            //TODO : Vérifier l'utilité de ce qui suit
-            /*
+
+        //TODO : Vérifier l'utilité de ce qui suit
+        /*
             velocity.linear.y = if kb.pressed(KeyCode::Down) {
                 if !slime.is_walking && curent_side != 0 && curent_side != 2 {
                     slime.need_new_sprite = true;

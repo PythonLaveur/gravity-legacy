@@ -86,7 +86,9 @@ impl From<IntGridCell> for ColliderBundle {
                 rotation_constraints,
                 ..Default::default()
             }
-        } else {ColliderBundle::default()}
+        } else {
+            ColliderBundle::default()
+        }
     }
 }
 

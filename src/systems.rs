@@ -1,10 +1,10 @@
+use crate::aud::*;
 use crate::{components::Player, MAP_LDTK};
 use crate::{
-    components::*, GameState, GameTextures, GetGameState, PLAYER_IDLE, PLAYER_IDLE_COLUMN,
-    PLAYER_IDLE_SIZE, PLAYER_JUMP, PLAYER_JUMP_COLUMN, PLAYER_JUMP_SIZE, PLAYER_WALK,
-    PLAYER_WALK_COLUMN, PLAYER_WALK_SIZE, CollisionStatus,
+    components::*, AudioState, CollisionStatus, GameState, GameTextures, GetGameState, PLAYER_IDLE,
+    PLAYER_IDLE_COLUMN, PLAYER_IDLE_SIZE, PLAYER_JUMP, PLAYER_JUMP_COLUMN, PLAYER_JUMP_SIZE,
+    PLAYER_WALK, PLAYER_WALK_COLUMN, PLAYER_WALK_SIZE,
 };
-
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_kira_audio::Audio;
@@ -29,8 +29,6 @@ pub struct WorldStatus {
 }
 // endregion:  --- Ressources
 
-
-
 pub fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -40,8 +38,8 @@ pub fn setup(
     let mut camera = OrthographicCameraBundle::new_2d();
     //Offset
     /*TODO : SET CAMERA AT CURRENT LEVEL LOCATION USING THE FOLLOWING IDEA
-        x = level_x + level_width/2 
-        y = level_y + level_width/2 */
+    x = level_x + level_width/2
+    y = level_y + level_width/2 */
     camera.transform = Transform {
         translation: Vec3::new(200., 200., 1000.),
         ..default()
@@ -64,8 +62,9 @@ pub fn setup(
     let ldtk_handle = asset_server.load(MAP_LDTK);
 
     //insert ressource
-    commands.insert_resource(WorldStatus{rotation: Vec2::new(1., 0.)});
-
+    commands.insert_resource(WorldStatus {
+        rotation: Vec2::new(1., 0.),
+    });
 
     //load textures atlases :
     let texture_handle = asset_server.load(PLAYER_JUMP);
@@ -115,11 +114,11 @@ pub fn setup(
         ..Default::default()
     });
 }
-
+/*
 pub fn background_audio(asset_server: Res<AssetServer>, audio: Res<Audio>) {
     audio.play_looped(asset_server.load("Audio/Hyper.ogg"));
 }
-
+*/
 pub fn spawn_wall_collision(
     mut commands: Commands,
     wall_query: Query<(&GridCoords, &Parent), Added<Wall>>,
@@ -134,7 +133,7 @@ pub fn spawn_wall_collision(
         left: i32,
         right: i32,
     }
-    
+
     // consider where the walls are
     // storing them as GridCoords in a HashSet for quick, easy lookup
     let mut level_to_wall_locations: HashMap<Entity, HashSet<GridCoords>> = HashMap::new();
@@ -149,7 +148,7 @@ pub fn spawn_wall_collision(
                 .insert(grid_coords);
         }
     });
-    
+
     if !wall_query.is_empty() {
         level_query.for_each(|(level_entity, level_handle)| {
             if let Some(level_walls) = level_to_wall_locations.get(&level_entity) {
@@ -276,38 +275,52 @@ pub fn world_rotation_system(
     mut world_status: ResMut<WorldStatus>,
     mut query: Query<&mut Transform, With<MainCamera>>,
     mut entity_query: Query<&mut Velocity, (With<RigidBody>, Without<Player>)>,
+    mut audio_state: ResMut<AudioState>,
+    time: Res<Time>,
+    mut event: EventWriter<WorldRotationEvent>,
 ) {
+    let mut cd: f32 = audio_state.world_rotation_cd;
     //Rotate the camera
     if let Ok(mut camera_tf) = query.get_single_mut() {
         if input.just_pressed(KeyCode::R) {
             //Rotate the camera
+            if cd > 0. {
+                cd -= time.delta_seconds();
+            } else {
+                event.send(WorldRotationEvent);
+                println!("Play world rotation");
+                cd = 2.;
+            }
+
             camera_tf.rotate(Quat::from_rotation_z(PI / 2.));
             //Change gravity
             let gravity = gravity.as_mut();
             if gravity.vector().y < 0. {
                 *gravity = Gravity::from(Vec3::new(2000., 0., 0.0));
                 world_status.rotation = Vec2::new(0., 1.);
-            } else
-            if gravity.vector().x > 0. {
+            } else if gravity.vector().x > 0. {
                 *gravity = Gravity::from(Vec3::new(0., 2000., 0.0));
                 world_status.rotation = Vec2::new(-1., 0.);
-            } else
-            if gravity.vector().y > 0. {
+            } else if gravity.vector().y > 0. {
                 *gravity = Gravity::from(Vec3::new(-2000., 0., 0.0));
                 world_status.rotation = Vec2::new(0., -1.);
-            } else
-            if gravity.vector().x < 0. {
+            } else if gravity.vector().x < 0. {
                 *gravity = Gravity::from(Vec3::new(0., -2000., 0.0));
                 world_status.rotation = Vec2::new(1., 0.);
-
             }
 
             for mut vel in entity_query.iter_mut() {
                 vel.linear.y += 0.00001;
             }
-
         }
         if input.just_pressed(KeyCode::T) {
+            if cd > 0. {
+                cd -= time.delta_seconds();
+            } else {
+                event.send(WorldRotationEvent);
+                println!("Play world rotation");
+                cd = 2.;
+            }
             //Rotate the camera
             camera_tf.rotate(Quat::from_rotation_z(-PI / 2.));
             //Change gravity
@@ -315,16 +328,13 @@ pub fn world_rotation_system(
             if gravity.vector().y < 0. {
                 *gravity = Gravity::from(Vec3::new(-2000., 0., 0.0));
                 world_status.rotation = Vec2::new(0., -1.);
-            } else
-            if gravity.vector().x < 0. {
+            } else if gravity.vector().x < 0. {
                 *gravity = Gravity::from(Vec3::new(0., 2000., 0.0));
                 world_status.rotation = Vec2::new(-1., 0.);
-            } else 
-            if gravity.vector().y > 0. {
+            } else if gravity.vector().y > 0. {
                 *gravity = Gravity::from(Vec3::new(2000., 0., 0.0));
                 world_status.rotation = Vec2::new(0., 1.);
-            } else 
-            if gravity.vector().x > 0. {
+            } else if gravity.vector().x > 0. {
                 *gravity = Gravity::from(Vec3::new(0., -2000., 0.0));
                 world_status.rotation = Vec2::new(1., 0.);
             }
@@ -332,67 +342,87 @@ pub fn world_rotation_system(
                 vel.linear.y += 0.00001;
             }
         }
-
     }
 }
 
-pub fn player_collision_with_pot (
+pub fn player_collision_with_pot(
     mut commands: Commands,
     pot_query: Query<Entity, With<Pot>>,
     wall_query: Query<Entity, With<Wall>>,
     mut player: Query<Entity, With<Player>>,
     mut collisions: EventReader<CollisionEvent>,
     mut collision_status: ResMut<CollisionStatus>,
+    mut audio_state: ResMut<AudioState>,
+    time: Res<Time>,
+    mut event: EventWriter<SlimPotEvent>,
+    mut event2: EventWriter<SlimPlatEvent>,
 ) {
+    let mut cd: f32 = audio_state.slim_pot_cd;
+    let mut cd2: f32 = audio_state.slim_plat_cd;
     for collision in collisions.iter() {
         match collision {
-            CollisionEvent::Started(collider_a, collider_b ) => {
-
-                let mut player_normal = Vec3::new(0.,0.,0.); 
+            CollisionEvent::Started(collider_a, collider_b) => {
+                let mut player_normal = Vec3::new(0., 0., 0.);
 
                 if let Ok(mut player) = player.get_mut(collider_a.rigid_body_entity()) {
-                    
                     if pot_query.get(collider_b.rigid_body_entity()).is_ok() {
-                        println!("player normal to pot: {:?}", collider_a.normals());
-                        if let Some(player_normal) = collider_a.normals().get(0){
-                            if *player_normal == Vec3::new(0., -1., 0.) {
-                                collision_status.top = true;
-                            }
-                            if *player_normal == Vec3::new(0., 1., 0.) {
-                                collision_status.bottom = true;
-                            }
-                            if *player_normal == Vec3::new(-1., 0., 0.) {
-                                collision_status.right = true;
-                            }
-                            if *player_normal == Vec3::new(1., 0., 0.) {
-                                collision_status.left = true;
-                            }
-                        };
-                    }
-                    else if wall_query.get(collider_b.rigid_body_entity()).is_ok() {
-                        println!("player normal to wall: {:?}", collider_a.normals());
-                        if let Some(player_normal) = collider_a.normals().get(0){
-                            if *player_normal == Vec3::new(0., -1., 0.) {
-                                collision_status.top = true;
-                            }
-                            if *player_normal == Vec3::new(0., 1., 0.) {
-                                collision_status.bottom = true;
-                            }
-                            if *player_normal == Vec3::new(-1., 0., 0.) {
-                                collision_status.right = true;
-                            }
-                            if *player_normal == Vec3::new(1., 0., 0.) {
-                                collision_status.left = true;
-                            }
-                        };
-                    }
+                        if cd > 0. {
+                            cd -= time.delta_seconds();
+                        } else {
+                            event.send(SlimPotEvent);
 
-                }
-                else if let Ok(mut player) = player.get_mut(collider_b.rigid_body_entity()) {
-                    
+                            cd = 2.;
+                        }
+                        println!("player normal to pot: {:?}", collider_a.normals());
+                        if let Some(player_normal) = collider_a.normals().get(0) {
+                            if *player_normal == Vec3::new(0., -1., 0.) {
+                                collision_status.top = true;
+                            }
+                            if *player_normal == Vec3::new(0., 1., 0.) {
+                                collision_status.bottom = true;
+                            }
+                            if *player_normal == Vec3::new(-1., 0., 0.) {
+                                collision_status.right = true;
+                            }
+                            if *player_normal == Vec3::new(1., 0., 0.) {
+                                collision_status.left = true;
+                            }
+                        };
+                    } else if wall_query.get(collider_b.rigid_body_entity()).is_ok() {
+                        println!("player normal to wall: {:?}", collider_a.normals());
+                        if cd2 > 0. {
+                            cd2 -= time.delta_seconds();
+                        } else {
+                            event2.send(SlimPlatEvent);
+
+                            cd2 = 2.;
+                        }
+                        if let Some(player_normal) = collider_a.normals().get(0) {
+                            if *player_normal == Vec3::new(0., -1., 0.) {
+                                collision_status.top = true;
+                            }
+                            if *player_normal == Vec3::new(0., 1., 0.) {
+                                collision_status.bottom = true;
+                            }
+                            if *player_normal == Vec3::new(-1., 0., 0.) {
+                                collision_status.right = true;
+                            }
+                            if *player_normal == Vec3::new(1., 0., 0.) {
+                                collision_status.left = true;
+                            }
+                        };
+                    }
+                } else if let Ok(mut player) = player.get_mut(collider_b.rigid_body_entity()) {
                     if pot_query.get(collider_a.rigid_body_entity()).is_ok() {
                         println!("player normal to pot: {:?}", collider_b.normals());
-                        if let Some(player_normal) = collider_b.normals().get(0){
+                        if cd > 0. {
+                            cd -= time.delta_seconds();
+                        } else {
+                            event.send(SlimPotEvent);
+
+                            cd = 2.;
+                        }
+                        if let Some(player_normal) = collider_b.normals().get(0) {
                             if *player_normal == Vec3::new(0., -1., 0.) {
                                 collision_status.top = true;
                             }
@@ -406,10 +436,16 @@ pub fn player_collision_with_pot (
                                 collision_status.left = true;
                             }
                         };
-                    }
-                    else if wall_query.get(collider_a.rigid_body_entity()).is_ok() {
+                    } else if wall_query.get(collider_a.rigid_body_entity()).is_ok() {
                         println!("player normal to wall: {:?}", collider_b.normals());
-                        if let Some(player_normal) = collider_b.normals().get(0){
+                        if cd2 > 0. {
+                            cd2 -= time.delta_seconds();
+                        } else {
+                            event2.send(SlimPlatEvent);
+
+                            cd2 = 2.;
+                        }
+                        if let Some(player_normal) = collider_b.normals().get(0) {
                             if *player_normal == Vec3::new(0., -1., 0.) {
                                 collision_status.top = true;
                             }
@@ -426,13 +462,16 @@ pub fn player_collision_with_pot (
                     }
                 }
 
-                if (collision_status.bottom && collision_status.top)||(collision_status.right && collision_status.left) {
+                if (collision_status.bottom && collision_status.top)
+                    || (collision_status.right && collision_status.left)
+                {
                     println!("Game Over")
                 }
-
             }
-            CollisionEvent::Stopped(collider_aa, collider_bb )=>{
-                commands.spawn().insert(ResetCollisionTimer(Timer::from_seconds(0.25, false)));
+            CollisionEvent::Stopped(collider_aa, collider_bb) => {
+                commands
+                    .spawn()
+                    .insert(ResetCollisionTimer(Timer::from_seconds(0.25, false)));
             }
         }
     }
@@ -442,7 +481,7 @@ pub fn reset_collision_timer(
     mut commands: Commands,
     mut collision_status: ResMut<CollisionStatus>,
     time: Res<Time>,
-    mut query: Query<(Entity, &mut ResetCollisionTimer), With<ResetCollisionTimer>>
+    mut query: Query<(Entity, &mut ResetCollisionTimer), With<ResetCollisionTimer>>,
 ) {
     for (entity, mut timer) in query.iter_mut() {
         timer.tick(time.delta());
@@ -456,7 +495,7 @@ pub fn reset_collision_timer(
     }
 }
 
-pub fn player_collision_with_spikes (
+pub fn player_collision_with_spikes(
     mut commands: Commands,
     mut get_game_state: ResMut<GetGameState>,
     mut world_status: ResMut<WorldStatus>,
@@ -464,34 +503,37 @@ pub fn player_collision_with_spikes (
     spikes_query: Query<Entity, With<Spikes>>,
     player: Query<(Entity, &Transform), With<Player>>,
     mut collisions: EventReader<CollisionEvent>,
-    mut query: Query<&mut Transform, (With<MainCamera>, Without<Player>)>
+    mut query: Query<&mut Transform, (With<MainCamera>, Without<Player>)>,
+    mut event: EventWriter<SlimPlosionEvent>,
 ) {
     for collision in collisions.iter() {
         match collision {
-            CollisionEvent::Started(collider_a, collider_b ) => {
+            CollisionEvent::Started(collider_a, collider_b) => {
                 if let Ok((player, tf)) = player.get(collider_a.rigid_body_entity()) {
-                    
                     if spikes_query.get(collider_b.rigid_body_entity()).is_ok() {
                         // Despawn the player
                         commands.entity(player).despawn();
                         get_game_state.player_spawned = false;
                         get_game_state.respawn_level = 1;
+                        event.send(SlimPlosionEvent);
 
                         // Spawn the animation
-                       commands.spawn().insert(AnimationToSpawn(tf.translation.clone(), Animation::Explosion));
-                        
+                        commands.spawn().insert(AnimationToSpawn(
+                            tf.translation.clone(),
+                            Animation::Explosion,
+                        ));
+
                         // Spawn the current level after a delai (fade out)
                         //get_game_state.level_index -= 1;
                         commands.insert_resource(LevelSelection::Index(get_game_state.level_index));
-                        
+
                         //Reset the gravity
-                        if let Ok(mut camera_tf) = query.get_single_mut() { 
+                        if let Ok(mut camera_tf) = query.get_single_mut() {
                             camera_tf.rotation = Quat::from_axis_angle(Vec3::new(0., 0., 1.), 0.);
                         }
                         *gravity = Gravity::from(Vec3::new(0., -2000., 0.0));
                         world_status.rotation = Vec2::new(1., 0.)
-                }
-                
+                    }
                 }
                 if let Ok((player, tf)) = player.get(collider_b.rigid_body_entity()) {
                     if spikes_query.get(collider_a.rigid_body_entity()).is_ok() {
@@ -499,16 +541,20 @@ pub fn player_collision_with_spikes (
                         commands.entity(player).despawn();
                         get_game_state.player_spawned = false;
                         get_game_state.respawn_level = 1;
+                        event.send(SlimPlosionEvent);
 
                         // Spawn the animation
-                       commands.spawn().insert(AnimationToSpawn(tf.translation.clone(), Animation::Explosion));
-                        
+                        commands.spawn().insert(AnimationToSpawn(
+                            tf.translation.clone(),
+                            Animation::Explosion,
+                        ));
+
                         // Spawn the current level after a delai (fade out)
                         //get_game_state.level_index -= 1;
                         commands.insert_resource(LevelSelection::Index(get_game_state.level_index));
-                        
+
                         //Reset the gravity
-                        if let Ok(mut camera_tf) = query.get_single_mut() { 
+                        if let Ok(mut camera_tf) = query.get_single_mut() {
                             camera_tf.rotation = Quat::from_axis_angle(Vec3::new(0., 0., 1.), 0.);
                         }
                         *gravity = Gravity::from(Vec3::new(0., -2000., 0.0));
@@ -552,30 +598,35 @@ pub fn player_succeed(
     mut world_status: ResMut<WorldStatus>,
     mut gravity: ResMut<Gravity>,
     mut get_game_state: ResMut<GetGameState>,
-    mut query: Query<&mut Transform, (With<MainCamera>, Without<Player>)>
+    mut query: Query<&mut Transform, (With<MainCamera>, Without<Player>)>,
+    mut event: EventWriter<SucceedEvent>,
 ) {
     for collision in collisions.iter() {
         match collision {
-            CollisionEvent::Started(collider_a, collider_b ) => {
+            CollisionEvent::Started(collider_a, collider_b) => {
                 if let Ok((player, tf)) = player.get(collider_a.rigid_body_entity()) {
                     if key.get(collider_b.rigid_body_entity()).is_ok() {
-                            // Despawn the player
-                            commands.entity(player).despawn();
-                            get_game_state.player_spawned = false;
+                        // Despawn the player
+                        commands.entity(player).despawn();
+                        get_game_state.player_spawned = false;
+                        event.send(SucceedEvent);
 
-                            // Spawn the animation
-                           commands.spawn().insert(AnimationToSpawn(tf.translation.clone(), Animation::Explosion));
-                            
-                            // Spawn the next level after a delai (fade out)
-                            get_game_state.level_index += 1;
-                            commands.insert_resource(LevelSelection::Index(get_game_state.level_index));
-                            
-                            //Reset the gravity
-                            if let Ok(mut camera_tf) = query.get_single_mut() { 
-                                camera_tf.rotation = Quat::from_axis_angle(Vec3::new(0., 0., 1.), 0.);
-                            }
-                            *gravity = Gravity::from(Vec3::new(0., -2000., 0.0));
-                            world_status.rotation = Vec2::new(1., 0.)
+                        // Spawn the animation
+                        commands.spawn().insert(AnimationToSpawn(
+                            tf.translation.clone(),
+                            Animation::Explosion,
+                        ));
+
+                        // Spawn the next level after a delai (fade out)
+                        get_game_state.level_index += 1;
+                        commands.insert_resource(LevelSelection::Index(get_game_state.level_index));
+
+                        //Reset the gravity
+                        if let Ok(mut camera_tf) = query.get_single_mut() {
+                            camera_tf.rotation = Quat::from_axis_angle(Vec3::new(0., 0., 1.), 0.);
+                        }
+                        *gravity = Gravity::from(Vec3::new(0., -2000., 0.0));
+                        world_status.rotation = Vec2::new(1., 0.)
                     }
                 }
                 if let Ok((player, tf)) = player.get(collider_b.rigid_body_entity()) {
@@ -585,14 +636,17 @@ pub fn player_succeed(
                         get_game_state.player_spawned = false;
 
                         // Spawn the animation
-                       commands.spawn().insert(AnimationToSpawn(tf.translation.clone(), Animation::Explosion));
-                        
+                        commands.spawn().insert(AnimationToSpawn(
+                            tf.translation.clone(),
+                            Animation::Explosion,
+                        ));
+
                         // Spawn the next level after a delai (fade out)
                         get_game_state.level_index += 1;
                         commands.insert_resource(LevelSelection::Index(get_game_state.level_index));
-                        
+
                         //Reset the gravity
-                        if let Ok(mut camera_tf) = query.get_single_mut() { 
+                        if let Ok(mut camera_tf) = query.get_single_mut() {
                             camera_tf.rotation = Quat::from_axis_angle(Vec3::new(0., 0., 1.), 0.);
                         }
                         *gravity = Gravity::from(Vec3::new(0., -2000., 0.0));
@@ -646,7 +700,10 @@ pub fn animation_to_spawn_system(
 pub fn animation_system(
     mut commands: Commands,
     time: Res<Time>,
-    mut query: Query<(Entity, &mut FxAnimationTimer, &mut TextureAtlasSprite), With<FxAnimationTimer>>,
+    mut query: Query<
+        (Entity, &mut FxAnimationTimer, &mut TextureAtlasSprite),
+        With<FxAnimationTimer>,
+    >,
 ) {
     for (entity, mut timer, mut sprite) in query.iter_mut() {
         timer.0.tick(time.delta());

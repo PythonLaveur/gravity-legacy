@@ -12,8 +12,10 @@ use fadeout::FadeoutPlugin;
 use heron::prelude::*;
 use systems::*;
 //use systems::{process_my_entities};
+use aud::{AudioState, GameAudioPlugin, BGM, SFX};
 use start_menu::MainMenuPlugin;
 mod ascii;
+mod aud;
 mod components;
 mod fadeout;
 mod slime;
@@ -87,12 +89,12 @@ fn main() {
         })
         .add_plugins(DefaultPlugins)
         .add_plugin(LdtkPlugin)
-        .add_plugin(AudioPlugin)
         .add_plugin(PhysicsPlugin::default())
         .add_plugin(FadeoutPlugin)
         .add_plugin(AsciiPlugin)
         .add_plugin(MainMenuPlugin)
         .add_plugin(SlimePlugin)
+        .add_plugin(GameAudioPlugin)
         .insert_resource(Gravity::from(Vec3::new(0.0, -2000., 0.0)))
         .insert_resource(LevelSelection::Index(1))
         .insert_resource(LdtkSettings {
@@ -104,10 +106,10 @@ fn main() {
         .add_system(systems::spawn_wall_collision)
         .add_system(world_rotation_system)
         .add_system(player_succeed)
-        //.add_system(player_collision_with_pot)
-        .add_startup_system(background_audio)
+        .add_system(player_collision_with_pot)
+        //.add_startup_system(background_audio)
         .add_system(systems::animate_sprite_system)
-        //.add_system(reset_collision_timer)
+        .add_system(reset_collision_timer)
         .add_system(spawn_level_system)
         .add_system(animation_to_spawn_system)
         .add_system(animation_system)
@@ -123,12 +125,9 @@ fn main() {
         .run();
 }
 
-fn spawn_level_system (
-    mut commands: Commands,
-    mut get_game_state: ResMut<GetGameState>,
-) {
+fn spawn_level_system(mut commands: Commands, mut get_game_state: ResMut<GetGameState>) {
     if get_game_state.respawn_level > 0 {
         commands.insert_resource(LevelSelection::Index(get_game_state.level_index));
         get_game_state.respawn_level -= 1;
-        }
+    }
 }
