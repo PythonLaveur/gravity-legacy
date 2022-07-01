@@ -103,7 +103,7 @@ fn setup_menu(mut commands: Commands, assets: Res<AssetServer>) {
                             "Start Game",
                             TextStyle {
                                 font: ui_assets.font.clone(),
-                                font_size: 40.0,
+                                font_size: 20.0,
                                 color: Color::rgb(0.9, 0.9, 0.9),
                             },
                             Default::default(),
