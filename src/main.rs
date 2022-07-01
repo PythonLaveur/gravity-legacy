@@ -26,13 +26,13 @@ const PLAYER_JUMP: &str = "Sprites/Player/jump.png";
 const PLAYER_JUMP_SIZE: (f32, f32) = (24., 27.);
 const PLAYER_JUMP_COLUMN: usize = 8;
 
-const PLAYER_IDLE: &str = "Sprites/Player/idle.png";
-const PLAYER_IDLE_SIZE: (f32, f32) = (22., 23.);
-const PLAYER_IDLE_COLUMN: usize = 8;
+const PLAYER_IDLE: &str = "Sprites/Player/idle (30x19).png";
+const PLAYER_IDLE_SIZE: (f32, f32) = (30., 19.);
+const PLAYER_IDLE_COLUMN: usize = 16;
 
-const PLAYER_WALK: &str = "Sprites/Player/walk.png";
-const PLAYER_WALK_SIZE: (f32, f32) = (23., 24.);
-const PLAYER_WALK_COLUMN: usize = 10;
+const PLAYER_WALK: &str = "Sprites/Player/walk (30x19).png";
+const PLAYER_WALK_SIZE: (f32, f32) = (30., 19.);
+const PLAYER_WALK_COLUMN: usize = 12;
 
 const PLAYER_SCALE: f32 = 0.7;
 const SECURITY_DISTANCE: f32 = 10.;
