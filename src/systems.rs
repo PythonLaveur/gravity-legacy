@@ -2,7 +2,7 @@ use crate::{components::Player, MAP_LDTK};
 use crate::{
     components::*, GameState, GameTextures, GetGameState, PLAYER_IDLE, PLAYER_IDLE_COLUMN,
     PLAYER_IDLE_SIZE, PLAYER_JUMP, PLAYER_JUMP_COLUMN, PLAYER_JUMP_SIZE, PLAYER_WALK,
-    PLAYER_WALK_COLUMN, PLAYER_WALK_SIZE,
+    PLAYER_WALK_COLUMN, PLAYER_WALK_SIZE, CollisionStatus,
 };
 
 use bevy::prelude::*;
@@ -55,6 +55,7 @@ pub fn setup(
         respawn_level: 0,
         player_spawned: false,
     });
+    commands.insert_resource(CollisionStatus::default());
 
     //Enable to recall the setup but ignoring the code before
     asset_server.watch_for_changes().unwrap();
@@ -262,7 +263,8 @@ pub fn spawn_wall_collision(
                         // Making the collider a child of the level serves two purposes:
                         // 1. Adjusts the transforms to be relative to the level for free
                         // 2. the colliders will be despawned automatically when levels unload
-                        .insert(Parent(level_entity));
+                        .insert(Parent(level_entity))
+                        .insert(Wall);
                 }
             }
         });
@@ -328,33 +330,95 @@ pub fn world_rotation_system(
 
 pub fn player_collision_with_pot (
     pot_query: Query<Entity, With<Pot>>,
+    wall_query: Query<Entity, With<Wall>>,
     mut player: Query<Entity, With<Player>>,
     mut collisions: EventReader<CollisionEvent>,
+    mut collision_status: ResMut<CollisionStatus>,
 ) {
     for collision in collisions.iter() {
         match collision {
             CollisionEvent::Started(collider_a, collider_b ) => {
+
+                let mut player_normal = Vec3::new(0.,0.,0.); 
+
                 if let Ok(mut player) = player.get_mut(collider_a.rigid_body_entity()) {
+                    
                     if pot_query.get(collider_b.rigid_body_entity()).is_ok() {
-                        //println!("Collision detected");
+                        println!("player normal to pot: {:?}", collider_a.normals());
+                        //println!("pot normal: {:?}", collider_b.normals());
+                        player_normal = *collider_a.normals().get(0).unwrap();
                     }
+                    else if wall_query.get(collider_b.rigid_body_entity()).is_ok() {
+                        println!("player normal to wall: {:?}", collider_a.normals());
+                        //println!("wall normal: {:?}", collider_b.normals());
+                        player_normal = *collider_a.normals().get(0).unwrap();
+                    }
+
                 }
-                if let Ok(mut player) = player.get_mut(collider_b.rigid_body_entity()) {
+                else if let Ok(mut player) = player.get_mut(collider_b.rigid_body_entity()) {
+                    
                     if pot_query.get(collider_a.rigid_body_entity()).is_ok() {
-                        //println!("Collision detected");
+                        println!("player normal to pot: {:?}", collider_b.normals());
+                        //println!("pot normal: {:?}", collider_a.normals());
+                        player_normal = *collider_b.normals().get(0).unwrap();
+                    }
+                    else if wall_query.get(collider_a.rigid_body_entity()).is_ok() {
+                        println!("player normal to wall: {:?}", collider_b.normals());
+                        //println!("wall normal: {:?}", collider_a.normals());
+                        player_normal = *collider_b.normals().get(0).unwrap();
                     }
                 }
+                if player_normal == Vec3::new(0., -1., 0.) {
+                    collision_status.top = true;
+                }
+                if player_normal == Vec3::new(0., 1., 0.) {
+                    collision_status.bottom = true;
+                }
+                if player_normal == Vec3::new(-1., 0., 0.) {
+                    collision_status.right = true;
+                }
+                if player_normal == Vec3::new(1., 0., 0.) {
+                    collision_status.left = true;
+                }
+
+                if (collision_status.bottom && collision_status.top)||(collision_status.right && collision_status.left) {
+                    println!("Game Over")
+                }
+
             }
-            CollisionEvent::Stopped(collider_aa, collider_bb ) => {
+            CollisionEvent::Stopped(collider_aa, collider_bb )=>{
+                let mut player_normal = Vec3::new(0.,0.,0.); 
+
                 if let Ok(mut player) = player.get_mut(collider_aa.rigid_body_entity()) {
+                    
                     if pot_query.get(collider_bb.rigid_body_entity()).is_ok() {
-                        //println!("Collision stopped");
+                        player_normal = *collider_aa.normals().get(0).unwrap();
+                    }
+                    else if wall_query.get(collider_bb.rigid_body_entity()).is_ok() {
+                        player_normal = *collider_aa.normals().get(0).unwrap();
+                    }
+
+                }
+                else if let Ok(mut player) = player.get_mut(collider_bb.rigid_body_entity()) {
+                    
+                    if pot_query.get(collider_aa.rigid_body_entity()).is_ok() {
+                        player_normal = *collider_bb.normals().get(0).unwrap();
+                    }
+                    else if wall_query.get(collider_aa.rigid_body_entity()).is_ok() {
+                        player_normal = *collider_bb.normals().get(0).unwrap();
                     }
                 }
-                if let Ok(mut player) = player.get_mut(collider_bb.rigid_body_entity()) {
-                    if pot_query.get(collider_aa.rigid_body_entity()).is_ok() {
-                        //println!("Collision stopped");
-                    }
+                if player_normal == Vec3::new(0., -1., 0.) {
+                    collision_status.top = false;
+                }
+                if player_normal == Vec3::new(0., 1., 0.) {
+                    collision_status.bottom = false;
+                }
+                if player_normal == Vec3::new(-1., 0., 0.) {
+                    collision_status.right = false;
+                }
+                if player_normal == Vec3::new(1., 0., 0.) {
+                    collision_status.left = false;
                 }
             }
         }
