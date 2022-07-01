@@ -274,7 +274,8 @@ pub fn world_rotation_system(
     input: Res<Input<KeyCode>>,
     mut gravity: ResMut<Gravity>,
     mut world_status: ResMut<WorldStatus>,
-    mut query: Query<&mut Transform, With<MainCamera>>
+    mut query: Query<&mut Transform, With<MainCamera>>,
+    mut entity_query: Query<&mut Velocity, (With<RigidBody>, Without<Player>)>,
 ) {
     //Rotate the camera
     if let Ok(mut camera_tf) = query.get_single_mut() {
@@ -301,6 +302,10 @@ pub fn world_rotation_system(
 
             }
 
+            for mut vel in entity_query.iter_mut() {
+                vel.linear.y += 0.00001;
+            }
+
         }
         if input.just_pressed(KeyCode::T) {
             //Rotate the camera
@@ -322,6 +327,9 @@ pub fn world_rotation_system(
             if gravity.vector().x > 0. {
                 *gravity = Gravity::from(Vec3::new(0., -2000., 0.0));
                 world_status.rotation = Vec2::new(1., 0.);
+            }
+            for mut vel in entity_query.iter_mut() {
+                vel.linear.y += 0.00001;
             }
         }
 
