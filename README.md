@@ -1,5 +1,9 @@
 # RustyGames
 
+## controle
+R et T pour changer le sens de la gravité
+Flèches droite et gauche pour se déplacer
+
 ## type de jeu
 puzzle avec plateforme et gravité 
 
