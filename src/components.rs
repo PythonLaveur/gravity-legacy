@@ -192,3 +192,6 @@ pub struct Slime {
 
 #[derive(Component, Deref, DerefMut)]
 pub struct AnimationTimer(pub Timer);
+
+#[derive(Component, Deref, DerefMut)]
+pub struct ResetCollisionTimer(pub Timer);

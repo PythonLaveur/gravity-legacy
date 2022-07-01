@@ -329,6 +329,7 @@ pub fn world_rotation_system(
 }
 
 pub fn player_collision_with_pot (
+    mut commands: Commands,
     pot_query: Query<Entity, With<Pot>>,
     wall_query: Query<Entity, With<Wall>>,
     mut player: Query<Entity, With<Player>>,
@@ -345,13 +346,37 @@ pub fn player_collision_with_pot (
                     
                     if pot_query.get(collider_b.rigid_body_entity()).is_ok() {
                         println!("player normal to pot: {:?}", collider_a.normals());
-                        //println!("pot normal: {:?}", collider_b.normals());
-                        player_normal = *collider_a.normals().get(0).unwrap();
+                        if let Some(player_normal) = collider_a.normals().get(0){
+                            if *player_normal == Vec3::new(0., -1., 0.) {
+                                collision_status.top = true;
+                            }
+                            if *player_normal == Vec3::new(0., 1., 0.) {
+                                collision_status.bottom = true;
+                            }
+                            if *player_normal == Vec3::new(-1., 0., 0.) {
+                                collision_status.right = true;
+                            }
+                            if *player_normal == Vec3::new(1., 0., 0.) {
+                                collision_status.left = true;
+                            }
+                        };
                     }
                     else if wall_query.get(collider_b.rigid_body_entity()).is_ok() {
                         println!("player normal to wall: {:?}", collider_a.normals());
-                        //println!("wall normal: {:?}", collider_b.normals());
-                        player_normal = *collider_a.normals().get(0).unwrap();
+                        if let Some(player_normal) = collider_a.normals().get(0){
+                            if *player_normal == Vec3::new(0., -1., 0.) {
+                                collision_status.top = true;
+                            }
+                            if *player_normal == Vec3::new(0., 1., 0.) {
+                                collision_status.bottom = true;
+                            }
+                            if *player_normal == Vec3::new(-1., 0., 0.) {
+                                collision_status.right = true;
+                            }
+                            if *player_normal == Vec3::new(1., 0., 0.) {
+                                collision_status.left = true;
+                            }
+                        };
                     }
 
                 }
@@ -359,26 +384,38 @@ pub fn player_collision_with_pot (
                     
                     if pot_query.get(collider_a.rigid_body_entity()).is_ok() {
                         println!("player normal to pot: {:?}", collider_b.normals());
-                        //println!("pot normal: {:?}", collider_a.normals());
-                        player_normal = *collider_b.normals().get(0).unwrap();
+                        if let Some(player_normal) = collider_b.normals().get(0){
+                            if *player_normal == Vec3::new(0., -1., 0.) {
+                                collision_status.top = true;
+                            }
+                            if *player_normal == Vec3::new(0., 1., 0.) {
+                                collision_status.bottom = true;
+                            }
+                            if *player_normal == Vec3::new(-1., 0., 0.) {
+                                collision_status.right = true;
+                            }
+                            if *player_normal == Vec3::new(1., 0., 0.) {
+                                collision_status.left = true;
+                            }
+                        };
                     }
                     else if wall_query.get(collider_a.rigid_body_entity()).is_ok() {
                         println!("player normal to wall: {:?}", collider_b.normals());
-                        //println!("wall normal: {:?}", collider_a.normals());
-                        player_normal = *collider_b.normals().get(0).unwrap();
+                        if let Some(player_normal) = collider_b.normals().get(0){
+                            if *player_normal == Vec3::new(0., -1., 0.) {
+                                collision_status.top = true;
+                            }
+                            if *player_normal == Vec3::new(0., 1., 0.) {
+                                collision_status.bottom = true;
+                            }
+                            if *player_normal == Vec3::new(-1., 0., 0.) {
+                                collision_status.right = true;
+                            }
+                            if *player_normal == Vec3::new(1., 0., 0.) {
+                                collision_status.left = true;
+                            }
+                        };
                     }
-                }
-                if player_normal == Vec3::new(0., -1., 0.) {
-                    collision_status.top = true;
-                }
-                if player_normal == Vec3::new(0., 1., 0.) {
-                    collision_status.bottom = true;
-                }
-                if player_normal == Vec3::new(-1., 0., 0.) {
-                    collision_status.right = true;
-                }
-                if player_normal == Vec3::new(1., 0., 0.) {
-                    collision_status.left = true;
                 }
 
                 if (collision_status.bottom && collision_status.top)||(collision_status.right && collision_status.left) {
@@ -387,40 +424,26 @@ pub fn player_collision_with_pot (
 
             }
             CollisionEvent::Stopped(collider_aa, collider_bb )=>{
-                let mut player_normal = Vec3::new(0.,0.,0.); 
-
-                if let Ok(mut player) = player.get_mut(collider_aa.rigid_body_entity()) {
-                    
-                    if pot_query.get(collider_bb.rigid_body_entity()).is_ok() {
-                        player_normal = *collider_aa.normals().get(0).unwrap();
-                    }
-                    else if wall_query.get(collider_bb.rigid_body_entity()).is_ok() {
-                        player_normal = *collider_aa.normals().get(0).unwrap();
-                    }
-
-                }
-                else if let Ok(mut player) = player.get_mut(collider_bb.rigid_body_entity()) {
-                    
-                    if pot_query.get(collider_aa.rigid_body_entity()).is_ok() {
-                        player_normal = *collider_bb.normals().get(0).unwrap();
-                    }
-                    else if wall_query.get(collider_aa.rigid_body_entity()).is_ok() {
-                        player_normal = *collider_bb.normals().get(0).unwrap();
-                    }
-                }
-                if player_normal == Vec3::new(0., -1., 0.) {
-                    collision_status.top = false;
-                }
-                if player_normal == Vec3::new(0., 1., 0.) {
-                    collision_status.bottom = false;
-                }
-                if player_normal == Vec3::new(-1., 0., 0.) {
-                    collision_status.right = false;
-                }
-                if player_normal == Vec3::new(1., 0., 0.) {
-                    collision_status.left = false;
-                }
+                commands.spawn().insert(ResetCollisionTimer(Timer::from_seconds(0.25, false)));
             }
+        }
+    }
+}
+
+pub fn reset_collision_timer(
+    mut commands: Commands,
+    mut collision_status: ResMut<CollisionStatus>,
+    time: Res<Time>,
+    mut query: Query<(Entity, &mut ResetCollisionTimer), With<ResetCollisionTimer>>
+) {
+    for (entity, mut timer) in query.iter_mut() {
+        timer.tick(time.delta());
+        if timer.just_finished() {
+            collision_status.top = false;
+            collision_status.bottom = false;
+            collision_status.left = false;
+            collision_status.right = false;
+            commands.entity(entity).despawn();
         }
     }
 }
