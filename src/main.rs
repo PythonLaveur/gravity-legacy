@@ -65,6 +65,14 @@ pub struct GetGameState {
     player_spawned: bool,
 }
 
+#[derive(Default)]
+pub struct CollisionStatus {
+    top: bool,
+    bottom: bool,
+    right: bool,
+    left: bool,
+}
+
 // endregion: --- Assets constants
 fn main() {
     env::set_var("RUST_BACKTRACE", "1");
@@ -86,7 +94,7 @@ fn main() {
         .add_plugin(MainMenuPlugin)
         .add_plugin(SlimePlugin)
         .insert_resource(Gravity::from(Vec3::new(0.0, -2000., 0.0)))
-        .insert_resource(LevelSelection::Index(0))
+        .insert_resource(LevelSelection::Index(1))
         .insert_resource(LdtkSettings {
             level_spawn_behavior: LevelSpawnBehavior::UseZeroTranslation,
             set_clear_color: SetClearColor::FromLevelBackground,
@@ -96,9 +104,10 @@ fn main() {
         .add_system(systems::spawn_wall_collision)
         .add_system(world_rotation_system)
         .add_system(player_succeed)
-        .add_system(player_collision_with_pot)
+        //.add_system(player_collision_with_pot)
         .add_startup_system(background_audio)
         .add_system(systems::animate_sprite_system)
+        //.add_system(reset_collision_timer)
         .add_system(spawn_level_system)
         .add_system(animation_to_spawn_system)
         .add_system(animation_system)

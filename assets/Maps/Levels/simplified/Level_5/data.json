@@ -1,0 +1,52 @@
+{
+	"x": -1,
+	"y": -1,
+	"width": 400,
+	"height": 400,
+	"iid": "8a0bde00-dbe0-11ec-9ee1-857505164bde",
+	"layers": [
+		"IntGrid.png",
+		"Tiles.png"
+	],
+	"entities": {
+		"Player": [
+			{
+				"id": "Player",
+				"iid": "8a0bde03-dbe0-11ec-9ee1-7fdacd020f58",
+				"layer": "Entities",
+				"x": 112,
+				"y": 240,
+				"width": 32,
+				"height": 32,
+				"color": 9755059,
+				"customFields" : {}
+			}
+		],
+		"Pot": [
+			{
+				"id": "Pot",
+				"iid": "0ba61730-dbe0-11ec-8367-fdfb7b9041ca",
+				"layer": "Entities",
+				"x": 256,
+				"y": 144,
+				"width": 32,
+				"height": 46,
+				"color": 10976256,
+				"customFields" : {}
+			}
+		],
+		"Key": [
+			{
+				"id": "Key",
+				"iid": "5f7440d0-dbe0-11ec-8367-0b797a55d6c4",
+				"layer": "Entities",
+				"x": 256,
+				"y": 80,
+				"width": 32,
+				"height": 32,
+				"color": 16318208,
+				"customFields" : {}
+			}
+		]
+	}
+}
